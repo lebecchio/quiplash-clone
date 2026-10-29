@@ -11,9 +11,9 @@ export interface ThemeInfo {
 }
 
 export const THEMES: Record<ThemeId, ThemeInfo> = {
-  default: { title: 'Quiplash Clone', emoji: '', photos: [] },
+  default: { title: 'Banter Bash', emoji: '', photos: [] },
   lars: {
-    title: "Lars' Quiplash",
+    title: "Lars' Lucky Banter Bash",
     emoji: '🍀',
     photos: ['lars/photo-1.jpg', 'lars/photo-2.jpg', 'lars/photo-3.jpg'],
     music: 'lars/lobby.mp3',

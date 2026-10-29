@@ -143,7 +143,7 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
       const m = view.matchup!;
       return (
         <Message
-          title={m.quiplash ? 'QUIPLASH!' : 'Results'}
+          title={m.quiplash ? 'CLEAN SWEEP!' : 'Results'}
           text={m.authors && m.points ? m.answers.map((a, i) => `${a} (${m.authors![i]}, +${m.points![i]})`).join('  vs  ') : ''}
         />
       );

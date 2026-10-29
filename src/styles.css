@@ -94,7 +94,7 @@ button.choice.picked { background: var(--grad-cool); color: #fff; border: 0; fon
 .answer .text { font-size: 2.1rem; font-weight: 600; overflow-wrap: anywhere; }
 .answer .meta { margin-top: 16px; color: var(--violet); }
 .quiplash {
-  text-align: center; font-size: 5rem !important; animation: wobble 1.4s ease-in-out infinite;
+  text-align: center; font-size: 4rem !important; animation: wobble 1.4s ease-in-out infinite;
   background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 @keyframes wobble { 50% { transform: rotate(-2deg) scale(1.06); } }

@@ -163,7 +163,7 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
               </div>
             ))}
           </div>
-          {m.quiplash && <h1 className="quiplash">QUIPLASH!</h1>}
+          {m.quiplash && <h1 className="quiplash">CLEAN SWEEP!</h1>}
           {view.phase === 'voting' && (
             <>
               <p className="muted">Vote on your phone!</p>
