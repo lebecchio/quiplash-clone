@@ -51,6 +51,7 @@ export interface Strings {
   lookBigScreen: string;
   inTitle: string;
   lobbyInfo: (n: number, max: number) => string;
+  lobbyWait: (n: number) => string;
   promptPlaceholder: string;
   addPrompt: string;
   youAreVip: string;
@@ -126,6 +127,7 @@ const en: Strings = {
   inTitle: "You're in!",
   lobbyInfo: (n, max) =>
     `${n} player${n === 1 ? '' : 's'} so far. Add up to ${max} prompts for others to answer (optional).`,
+  lobbyWait: (n) => `${n} player${n === 1 ? '' : 's'} so far. Waiting for the VIP to start.`,
   promptPlaceholder: 'e.g. The worst name for a pet snake',
   addPrompt: 'Add prompt',
   youAreVip: "You're the VIP.",
@@ -201,6 +203,7 @@ const da: Strings = {
   inTitle: 'Du er med!',
   lobbyInfo: (n, max) =>
     `${n} spiller${n === 1 ? '' : 'e'} indtil videre. Tilføj op til ${max} spørgsmål, som de andre kan svare på (valgfrit).`,
+  lobbyWait: (n) => `${n} spiller${n === 1 ? '' : 'e'} indtil videre. Venter på, at VIP’en starter spillet.`,
   promptPlaceholder: 'fx Det værste navn til en slange',
   addPrompt: 'Tilføj spørgsmål',
   youAreVip: 'Du er VIP.',

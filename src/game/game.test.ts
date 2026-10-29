@@ -479,3 +479,15 @@ describe('Danish Lars version', () => {
     expect(s.matchups.every((m) => /[æøå]|[a-z]/i.test(m.prompt))).toBe(true);
   });
 });
+
+describe('player prompts per theme', () => {
+  it('are accepted in the default version but not in the Lars version', () => {
+    for (const [theme, expected] of [['default', 1], ['lars', 0]] as const) {
+      let s = createGame({ seed: 1, theme });
+      s = reduce(s, { type: 'join', token: 'a', name: 'A', now: 1 });
+      s = reduce(s, { type: 'submitPrompt', playerId: 'p1', text: 'hello?', now: 2 });
+      expect(s.playerPrompts).toHaveLength(expected);
+      expect(viewFor(s, 'p1').lobby!.maxPrompts).toBe(expected === 1 ? 3 : 0);
+    }
+  });
+});

@@ -176,19 +176,20 @@ function LobbyScreen({ view, client }: { view: View; client: PhoneClient }) {
   const s = STRINGS[view.theme];
   const [text, setText] = useState('');
   const lobby = view.lobby!;
+  const canWrite = lobby.maxPrompts > 0;
   const full = lobby.myPrompts.length >= lobby.maxPrompts;
   return (
     <section>
       <h2>{s.inTitle}</h2>
       <p className="muted">
-        {s.lobbyInfo(view.players.length, lobby.maxPrompts)}
+        {canWrite ? s.lobbyInfo(view.players.length, lobby.maxPrompts) : s.lobbyWait(view.players.length)}
       </p>
       <ul className="list">
         {lobby.myPrompts.map((p) => (
           <li key={p}>{p}</li>
         ))}
       </ul>
-      {!full && (
+      {canWrite && !full && (
         <form
           onSubmit={(e) => {
             e.preventDefault();

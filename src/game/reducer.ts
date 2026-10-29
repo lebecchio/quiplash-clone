@@ -1,4 +1,4 @@
-import { noAnswerFor, packFor } from './packs';
+import { allowsPlayerPrompts, noAnswerFor, packFor } from './packs';
 import { avatarsFor, type ThemeId } from './avatars';
 import { buildSlots, matchPrompts } from './assign';
 import { makeRoomCode, mulberry32, shuffle, type Rng } from './rng';
@@ -129,7 +129,7 @@ function apply(ctx: Ctx, a: Action) {
       player!.connected = false;
       return;
     case 'submitPrompt': {
-      if (s.phase !== 'lobby') return;
+      if (s.phase !== 'lobby' || !allowsPlayerPrompts(s.theme)) return;
       const text = clean(a.text, MAX_PROMPT_LEN);
       const mine = s.playerPrompts.filter((p) => p.authorId === a.playerId);
       if (!text || mine.length >= MAX_PLAYER_PROMPTS) return;

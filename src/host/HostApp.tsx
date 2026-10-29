@@ -259,7 +259,7 @@ function Lobby({ view, photos }: { view: View; photos: string[] }) {
               : s.needMore(view.lobby?.minPlayers ?? 3, vip.name)
             : s.waitingFirst}
         </p>
-        <p className="muted">{s.promptCount(view.lobby?.promptCount ?? 0)}</p>
+        {(view.lobby?.maxPrompts ?? 0) > 0 && <p className="muted">{s.promptCount(view.lobby?.promptCount ?? 0)}</p>}
       </div>
       <Carousel photos={photos} />
     </section>

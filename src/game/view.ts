@@ -1,4 +1,5 @@
 import type { ThemeId } from './avatars';
+import { allowsPlayerPrompts } from './packs';
 import { vipId } from './reducer';
 import { FINAL_POINTS_PER_VOTE, FINAL_VOTES_PER_PLAYER, MAX_PLAYER_PROMPTS, MIN_PLAYERS, type GameState, type Phase } from './types';
 
@@ -126,7 +127,7 @@ export function viewFor(s: GameState, playerId: string | null): View {
       canStart: s.players.filter((p) => p.connected).length >= MIN_PLAYERS,
       minPlayers: MIN_PLAYERS,
       myPrompts: me ? s.playerPrompts.filter((p) => p.authorId === me.id).map((p) => p.text) : [],
-      maxPrompts: MAX_PLAYER_PROMPTS,
+      maxPrompts: allowsPlayerPrompts(s.theme) ? MAX_PLAYER_PROMPTS : 0,
       promptCount: s.playerPrompts.length,
     };
   }
