@@ -1,3 +1,4 @@
+import { Logo } from './ui/Logo';
 import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
 import { isThemeId, type ThemeId } from './game/avatars';
@@ -43,7 +44,10 @@ function Home({ bad }: { bad: boolean }) {
   useEffect(() => applyTheme('default'), []);
   return (
     <main className="screen phone">
-      <h1>Jim</h1>
+      <h1 className="logo-title">
+        <Logo />
+        <span className="sr-only">Jim</span>
+      </h1>
       <a className="big primary link" href="#/host">
         Host a game on this screen
       </a>

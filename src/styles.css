@@ -254,3 +254,13 @@ html[data-theme='lars'] .carousel { animation: sway 6s ease-in-out infinite alte
 @keyframes sip-in { from { opacity: 0; transform: translate(-50%, -40px) scale(0.7); } to { opacity: 1; transform: translateX(-50%); } }
 @keyframes sip-out { to { opacity: 0; transform: translate(-50%, -20px) scale(0.9); } }
 @keyframes sip-cheers { 40% { transform: rotate(-18deg) scale(1.15); } 70% { transform: rotate(10deg); } }
+
+/* ---------- Logo ---------- */
+.logo-title { margin: 0 0 8px; text-align: center; }
+.logo { width: min(320px, 80%); height: auto; overflow: visible; filter: drop-shadow(0 14px 22px rgba(138, 108, 255, 0.35)); animation: logo-bob 4s ease-in-out infinite; }
+.logo .spark { transform-box: fill-box; transform-origin: center; animation: logo-twinkle 2.4s ease-in-out infinite; }
+.logo .s2 { animation-delay: 1.2s; }
+@keyframes logo-bob { 50% { transform: translateY(-6px) rotate(1deg); } }
+@keyframes logo-twinkle { 50% { transform: scale(0.45) rotate(45deg); opacity: 0.6; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .logo, .logo .spark { animation: none; } }
