@@ -1,19 +1,21 @@
 import QRCode from 'qrcode';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import type { ThemeId } from '../game/avatars';
 import { createGame } from '../game/reducer';
 import { viewFor, type View } from '../game/view';
 import { HostServer } from '../net/host';
+import { applyTheme, THEMES } from '../themes';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
 import { loadState, saveState } from './persist';
 import { LobbyMusic } from './music';
 import { speak, stopSpeaking } from './speech';
 
-function useServer(): HostServer {
+function useServer(theme: ThemeId): HostServer {
   const ref = useRef<HostServer | null>(null);
   if (!ref.current) {
     const saved = loadState();
-    const state = saved ?? createGame({ seed: (Math.random() * 2 ** 32) >>> 0, now: Date.now() });
+    const state = saved ?? createGame({ seed: (Math.random() * 2 ** 32) >>> 0, now: Date.now(), theme });
     ref.current = new HostServer(state, saved !== null, saveState);
   }
   useEffect(() => {
@@ -24,11 +26,12 @@ function useServer(): HostServer {
   return ref.current;
 }
 
-export function HostApp() {
-  const server = useServer();
+export function HostApp({ theme }: { theme: ThemeId }) {
+  const server = useServer(theme);
   const state = useSyncExternalStore(server.subscribe, server.getState);
   const status = useSyncExternalStore(server.subscribe, server.getStatus);
   const view = viewFor(state, null);
+  useEffect(() => applyTheme(view.theme), [view.theme]);
   const [muted, setMuted] = useState(false);
 
   // Browsers only allow audio after a click or key press.
@@ -99,7 +102,7 @@ function Header({ view }: { view: View }) {
   };
   return (
     <header>
-      <span>{labels[view.phase] ?? 'Quiplash Clone'}</span>
+      <span>{labels[view.phase] ?? `${THEMES[view.theme].title} ${THEMES[view.theme].emoji}`}</span>
       <span>Room {view.roomCode}</span>
       <Countdown deadline={view.deadline} paused={view.paused} />
     </header>
@@ -211,7 +214,7 @@ function Body({ view }: { view: View }) {
 
 function Lobby({ view }: { view: View }) {
   const [qr, setQr] = useState('');
-  const joinUrl = `${location.origin}${location.pathname}#/join?code=${view.roomCode}`;
+  const joinUrl = `${location.origin}${location.pathname}#/join?code=${view.roomCode}${view.theme === 'default' ? '' : `&theme=${view.theme}`}`;
   useEffect(() => {
     QRCode.toDataURL(joinUrl, { margin: 2, width: 360, color: { dark: '#000000', light: '#ffffff' } }).then(setQr, () => setQr(''));
   }, [joinUrl]);

@@ -1,3 +1,4 @@
+import type { ThemeId } from './avatars';
 import { vipId } from './reducer';
 import { FINAL_POINTS_PER_VOTE, FINAL_VOTES_PER_PLAYER, MAX_PLAYER_PROMPTS, MIN_PLAYERS, type GameState, type Phase } from './types';
 
@@ -54,6 +55,7 @@ export interface FinalView {
 export interface View {
   role: 'host' | 'player';
   roomCode: string;
+  theme: ThemeId;
   phase: Phase;
   /** Host clock at send time, so phones can correct for clock skew. */
   now: number;
@@ -97,6 +99,7 @@ export function viewFor(s: GameState, playerId: string | null): View {
   const view: View = {
     role: me ? 'player' : 'host',
     roomCode: s.roomCode,
+    theme: s.theme,
     phase,
     now: s.now,
     deadline: s.deadline,

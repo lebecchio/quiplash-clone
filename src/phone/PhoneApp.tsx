@@ -1,4 +1,5 @@
-import { AVATARS } from '../game/avatars';
+import { avatarsFor, type ThemeId } from '../game/avatars';
+import { applyTheme } from '../themes';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { View } from '../game/view';
 import { PhoneClient } from '../net/client';
@@ -12,7 +13,7 @@ const REJECTIONS = {
   unknown: 'The host no longer knows you. Join again.',
 } as const;
 
-export function PhoneApp({ code }: { code: string }) {
+export function PhoneApp({ code, theme }: { code: string; theme: ThemeId }) {
   const [client, setClient] = useState<PhoneClient | null>(null);
   useEffect(() => {
     const c = new PhoneClient(code);
@@ -21,12 +22,14 @@ export function PhoneApp({ code }: { code: string }) {
     return () => c.stop();
   }, [code]);
   if (!client) return null;
-  return <Phone client={client} code={code} />;
+  return <Phone client={client} code={code} theme={theme} />;
 }
 
-function Phone({ client, code }: { client: PhoneClient; code: string }) {
+function Phone({ client, code, theme }: { client: PhoneClient; code: string; theme: ThemeId }) {
   const snap = useSyncExternalStore(client.subscribe, client.getSnapshot);
   const { view } = snap;
+  const activeTheme = view?.theme ?? theme;
+  useEffect(() => applyTheme(activeTheme), [activeTheme]);
   useWakeLock(!!view && view.phase !== 'lobby' && view.phase !== 'gameOver');
 
   const cantConnect = snap.cantConnect && (
@@ -39,7 +42,7 @@ function Phone({ client, code }: { client: PhoneClient; code: string }) {
         <h1>Room {code}</h1>
         {snap.rejected && <p className="notice">{REJECTIONS[snap.rejected]}</p>}
         {!snap.joined ? (
-          <NameForm client={client} connected={snap.status === 'connected'} />
+          <NameForm client={client} connected={snap.status === 'connected'} theme={activeTheme} />
         ) : (
           <p>Connecting…</p>
         )}
@@ -60,9 +63,12 @@ function Phone({ client, code }: { client: PhoneClient; code: string }) {
   );
 }
 
-function NameForm({ client, connected }: { client: PhoneClient; connected: boolean }) {
+function NameForm({ client, connected, theme }: { client: PhoneClient; connected: boolean; theme: ThemeId }) {
+  const avatars = avatarsFor(theme);
   const [name, setName] = useState('');
-  const [avatar, setAvatar] = useState<string>(() => AVATARS[Math.floor(Math.random() * AVATARS.length)]);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [random] = useState(() => Math.random());
+  const avatar = picked ?? avatars[Math.floor(random * avatars.length)];
   return (
     <form
       onSubmit={(e) => {
@@ -72,14 +78,14 @@ function NameForm({ client, connected }: { client: PhoneClient; connected: boole
     >
       <label>Pick your avatar</label>
       <div className="avatars" role="radiogroup" aria-label="Avatar">
-        {AVATARS.map((a) => (
+        {avatars.map((a) => (
           <button
             type="button"
             key={a}
             role="radio"
             aria-checked={a === avatar}
             className={`avatar-btn${a === avatar ? ' picked' : ''}`}
-            onClick={() => setAvatar(a)}
+            onClick={() => setPicked(a)}
           >
             {a}
           </button>

@@ -455,3 +455,15 @@ describe('avatars', () => {
     expect(new Set(avatars).size).toBe(3);
   });
 });
+
+describe('themes', () => {
+  it('uses the room theme\'s avatar set', () => {
+    const s0 = createGame({ seed: 1, theme: 'lars' });
+    const s1 = reduce(s0, { type: 'join', token: 'a', name: 'Lars', avatar: '🍺', now: 1 });
+    const s2 = reduce(s1, { type: 'join', token: 'b', name: 'Bo', avatar: '🦄', now: 2 });
+    expect(s2.players[0].avatar).toBe('🍺');
+    expect(['🍺', '🍻', '🥃', '🚬', '🎰', '🎲', '🃏', '💰', '🍀', '👴', '🥸', '👓', '🎩', '🪙', '♠️', '🧓']).toContain(s2.players[1].avatar);
+    expect(s2.players[1].avatar).not.toBe('🍺');
+    expect(viewFor(s2, null).theme).toBe('lars');
+  });
+});

@@ -28,8 +28,8 @@ body::before, body::after {
   content: ''; position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); opacity: 0.55;
   animation: drift 18s ease-in-out infinite alternate;
 }
-body::before { width: 46vmax; height: 46vmax; left: -12vmax; top: -10vmax; background: #ffb3d6; }
-body::after { width: 40vmax; height: 40vmax; right: -10vmax; bottom: -12vmax; background: #b9adff; animation-duration: 24s; }
+body::before { width: 46vmax; height: 46vmax; left: -12vmax; top: -10vmax; background: var(--blob1, #ffb3d6); }
+body::after { width: 40vmax; height: 40vmax; right: -10vmax; bottom: -12vmax; background: var(--blob2, #b9adff); animation-duration: 24s; }
 @keyframes drift { to { transform: translate(6vmax, 5vmax) scale(1.12); } }
 @keyframes pop { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation: none !important; transition: none !important; } }
@@ -127,3 +127,35 @@ label { display: block; font-weight: 600; margin-top: 12px; color: var(--muted);
 .avatar-btn.picked { background: var(--grad-cool); box-shadow: 0 0 0 3px var(--violet); transform: scale(1.1); }
 .scoreboard .avatar { font-size: 1.2em; }
 .music-hint { text-align: center; color: var(--muted); }
+
+/* ---------- Lars version: green, four-leaf clover ---------- */
+html[data-theme='lars'] {
+  --bg1: #f1f9e4;
+  --bg2: #dff3d3;
+  --bg3: #c6e9cf;
+  --ink: #12301c;
+  --muted: #4a6b55;
+  --line: rgba(30, 120, 70, 0.22);
+  --pink: #1fa653;
+  --orange: #a8d12f;
+  --violet: #14693a;
+  --mint: #d4a72c;
+  --coral: #c9483a;
+  --shadow: 0 10px 30px rgba(20, 105, 58, 0.2);
+  --grad: linear-gradient(135deg, #1fa653, #a8d12f);
+  --grad-cool: linear-gradient(135deg, #14693a, #1fa653);
+  --blob1: #9fdc9c;
+  --blob2: #e6e38a;
+}
+html[data-theme='lars'] body {
+  /* tiled four-leaf clovers over the gradient */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg transform='translate(60 60)' fill='%231fa653' fill-opacity='.13'%3E%3Cg id='l'%3E%3Cpath d='M0 0C-4-14-20-22-26-12-31-3-20 6 0 0Z' transform='rotate(-45)'/%3E%3C/g%3E%3Cuse href='%23l' transform='rotate(90)'/%3E%3Cuse href='%23l' transform='rotate(180)'/%3E%3Cuse href='%23l' transform='rotate(270)'/%3E%3Cpath d='M0 0Q4 22 14 30' stroke='%231fa653' stroke-opacity='.13' stroke-width='3' fill='none'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(160deg, var(--bg1), var(--bg2) 50%, var(--bg3));
+  background-size: 120px 120px, auto;
+}
+html[data-theme='lars'] body::before { background: var(--blob1); }
+html[data-theme='lars'] body::after { background: var(--blob2); }
+html[data-theme='lars'] .overlay { background: rgba(241, 249, 228, 0.9); }
+html[data-theme='lars'] .avatars { grid-template-columns: repeat(8, 1fr); }
+.lars-link { background: var(--card); color: #14693a; border-color: #1fa653; font-weight: 600; }

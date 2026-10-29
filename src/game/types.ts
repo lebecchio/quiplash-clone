@@ -1,4 +1,6 @@
-export const STATE_VERSION = 1;
+import type { ThemeId } from './avatars';
+
+export const STATE_VERSION = 2;
 
 export const MIN_PLAYERS = 3;
 export const MAX_PLAYERS = 12;
@@ -79,6 +81,7 @@ export interface GameState {
   /** mulberry32 state. */
   seed: number;
   roomCode: string;
+  theme: ThemeId;
   /** Last timestamp passed in; the state machine never reads the clock. */
   now: number;
   phase: Phase;
