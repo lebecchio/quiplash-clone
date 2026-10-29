@@ -117,3 +117,41 @@ export class LobbyMusic {
     src.stop(t + dur + 0.02);
   }
 }
+
+/** Plays an audio file on repeat, with a short fade in and out. */
+export class FileMusic {
+  private audio: HTMLAudioElement;
+  private fade: ReturnType<typeof setInterval> | null = null;
+
+  constructor(url: string, private volume = 0.7) {
+    this.audio = new Audio(url);
+    this.audio.loop = true;
+    this.audio.preload = 'auto';
+  }
+
+  start() {
+    this.fadeTo(this.volume, () => {});
+    this.audio.volume = this.audio.paused ? 0 : this.audio.volume;
+    void this.audio.play().catch(() => {});
+  }
+
+  stop() {
+    this.fadeTo(0, () => this.audio.pause());
+  }
+
+  private fadeTo(target: number, done: () => void) {
+    if (this.fade) clearInterval(this.fade);
+    this.fade = setInterval(() => {
+      const v = this.audio.volume;
+      const next = v + Math.sign(target - v) * 0.05;
+      if (Math.abs(target - next) < 0.05) {
+        this.audio.volume = target;
+        clearInterval(this.fade!);
+        this.fade = null;
+        done();
+      } else {
+        this.audio.volume = Math.min(1, Math.max(0, next));
+      }
+    }, 60);
+  }
+}

@@ -10,7 +10,7 @@ import { CloverRain } from '../ui/CloverRain';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
 import { loadState, saveState } from './persist';
-import { LobbyMusic } from './music';
+import { FileMusic, LobbyMusic } from './music';
 import { speak, stopSpeaking } from './speech';
 
 function useServer(theme: ThemeId): HostServer {
@@ -50,10 +50,11 @@ export function HostApp({ theme }: { theme: ThemeId }) {
   }, []);
 
   // Lobby music while waiting for players.
-  const music = useRef<LobbyMusic | null>(null);
+  const music = useRef<{ start(): void; stop(): void } | null>(null);
+  const themeMusic = THEMES[view.theme].music;
   const playMusic = unlocked && !muted && view.phase === 'lobby';
   useEffect(() => {
-    music.current ??= new LobbyMusic();
+    music.current ??= themeMusic ? new FileMusic(`${import.meta.env.BASE_URL}${themeMusic}`) : new LobbyMusic();
     if (playMusic) music.current.start();
     else music.current.stop();
   }, [playMusic]);

@@ -6,6 +6,8 @@ export interface ThemeInfo {
   emoji: string;
   /** Paths under public/, shown in a carousel on the host screen. */
   photos: string[];
+  /** Path under public/ of a lobby song. Without one, the synthesized loop plays. */
+  music?: string;
 }
 
 export const THEMES: Record<ThemeId, ThemeInfo> = {
@@ -14,6 +16,7 @@ export const THEMES: Record<ThemeId, ThemeInfo> = {
     title: "Lars' Quiplash",
     emoji: '🍀',
     photos: ['lars/photo-1.jpg', 'lars/photo-2.jpg', 'lars/photo-3.jpg'],
+    music: 'lars/lobby.mp3',
   },
 };
 
