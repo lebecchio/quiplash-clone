@@ -43,7 +43,7 @@ function Home({ bad }: { bad: boolean }) {
   useEffect(() => applyTheme('default'), []);
   return (
     <main className="screen phone">
-      <h1>Banter Bash</h1>
+      <h1>Jim</h1>
       <a className="big primary link" href="#/host">
         Host a game on this screen
       </a>

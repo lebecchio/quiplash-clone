@@ -11,7 +11,7 @@ export interface ThemeInfo {
 }
 
 export const THEMES: Record<ThemeId, ThemeInfo> = {
-  default: { title: 'Banter Bash', emoji: '', photos: [] },
+  default: { title: 'Jim', emoji: '', photos: [] },
   lars: {
     title: 'Gamle Lars spillet',
     emoji: '🍀',

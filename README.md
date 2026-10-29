@@ -1,4 +1,4 @@
-# Banter Bash
+# Jim
 
 A party game for 3–12 players: write funny answers to prompts, then vote on the best ones. One shared host screen; everyone plays on their phone.
 There is no server: the host's browser runs the game and phones connect over WebRTC (PeerJS).
