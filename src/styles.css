@@ -197,8 +197,8 @@ html[data-theme='lars'] h1:not(.prompt) { font-family: 'Bungee', 'Fredoka', sans
 html[data-theme='lars'] .prompt, html[data-theme='lars'] .phone h2 { font-weight: 700; }
 html[data-theme='lars'] header { font-family: 'Bungee', 'Fredoka', sans-serif; color: #ffe36b; text-shadow: 0 2px 0 #062c14; }
 html[data-theme='lars'] .code {
-  font-family: 'Bungee', sans-serif; color: #ffd84a; background: none; -webkit-text-fill-color: initial;
-  text-shadow: 0 4px 0 #b8860b, 0 8px 0 #7a5a00, 0 0 24px rgba(255, 216, 74, 0.8);
+  font-family: 'Bungee', sans-serif; color: #15b455; background: none; -webkit-text-fill-color: initial;
+  text-shadow: 0 4px 0 #0b7a38, 0 8px 0 #064a22, 0 0 24px rgba(45, 255, 138, 0.55);
   animation: glow 2s ease-in-out infinite alternate;
 }
 @keyframes glow { from { filter: brightness(1); } to { filter: brightness(1.25); } }
