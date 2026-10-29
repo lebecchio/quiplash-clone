@@ -1,0 +1,65 @@
+import type { View } from '../game/view';
+
+/** What a phone may ask for. The host adds the player id from the connection. */
+export type PhoneAction =
+  | { type: 'join'; token: string; name: string }
+  | { type: 'rejoin'; token: string }
+  | { type: 'submitPrompt'; text: string }
+  | { type: 'answer'; matchupId: number; text: string }
+  | { type: 'vote'; choice: 0 | 1 }
+  | { type: 'finalVote'; answerIds: number[] }
+  | { type: 'start' }
+  | { type: 'skipTimer' }
+  | { type: 'skipMatchup' }
+  | { type: 'endGame' }
+  | { type: 'playAgain' };
+
+export type ClientMessage = { type: 'action'; action: PhoneAction };
+
+export type RejectReason = 'started' | 'full' | 'unknown';
+
+export type HostMessage = { type: 'view'; view: View } | { type: 'rejected'; reason: RejectReason };
+
+export const ROOM_PREFIX = 'qlc-';
+export const peerIdFor = (code: string) => `${ROOM_PREFIX}${code}`;
+
+export const ICE_CONFIG = {
+  // Free public STUN only: no TURN relay in version 1.
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }],
+};
+
+const str = (v: unknown, max = 200): v is string => typeof v === 'string' && v.length <= max;
+
+/** Validates untrusted data from a phone. Returns null for anything malformed. */
+export function parseClientMessage(raw: unknown): PhoneAction | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const m = raw as { type?: unknown; action?: unknown };
+  if (m.type !== 'action' || !m.action || typeof m.action !== 'object') return null;
+  const a = m.action as Record<string, unknown>;
+  switch (a.type) {
+    case 'join':
+      return str(a.token, 100) && str(a.name) ? { type: 'join', token: a.token, name: a.name } : null;
+    case 'rejoin':
+      return str(a.token, 100) ? { type: 'rejoin', token: a.token } : null;
+    case 'submitPrompt':
+      return str(a.text) ? { type: 'submitPrompt', text: a.text } : null;
+    case 'answer':
+      return Number.isInteger(a.matchupId) && str(a.text)
+        ? { type: 'answer', matchupId: a.matchupId as number, text: a.text }
+        : null;
+    case 'vote':
+      return a.choice === 0 || a.choice === 1 ? { type: 'vote', choice: a.choice } : null;
+    case 'finalVote':
+      return Array.isArray(a.answerIds) && a.answerIds.length <= 50 && a.answerIds.every(Number.isInteger)
+        ? { type: 'finalVote', answerIds: a.answerIds as number[] }
+        : null;
+    case 'start':
+    case 'skipTimer':
+    case 'skipMatchup':
+    case 'endGame':
+    case 'playAgain':
+      return { type: a.type };
+    default:
+      return null;
+  }
+}
