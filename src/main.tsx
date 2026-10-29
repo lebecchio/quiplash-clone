@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { isThemeId, type ThemeId } from './game/avatars';
 import { applyTheme, THEMES } from './themes';
 import { HostApp } from './host/HostApp';
+import { clearSavedState } from './host/persist';
 import { PhoneApp } from './phone/PhoneApp';
 import './styles.css';
 
@@ -65,7 +66,10 @@ function Home({ bad }: { bad: boolean }) {
 
 /** Shown after "Host a game": pick which version of the game to run. */
 function ThemePicker() {
-  useEffect(() => applyTheme('default'), []);
+  useEffect(() => {
+    applyTheme('default');
+    clearSavedState();
+  }, []);
   return (
     <main className="screen phone">
       <h1>Which version?</h1>

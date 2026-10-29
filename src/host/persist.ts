@@ -38,3 +38,12 @@ export function loadState(): GameState | null {
     return null;
   }
 }
+
+/** A fresh game was requested (the version picker): forget any saved one. */
+export function clearSavedState() {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    /* nothing to clear */
+  }
+}

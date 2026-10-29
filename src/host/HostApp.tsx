@@ -14,7 +14,8 @@ import { speak, stopSpeaking } from './speech';
 function useServer(theme: ThemeId): HostServer {
   const ref = useRef<HostServer | null>(null);
   if (!ref.current) {
-    const saved = loadState();
+    const loaded = loadState();
+    const saved = loaded && loaded.theme === theme ? loaded : null;
     const state = saved ?? createGame({ seed: (Math.random() * 2 ** 32) >>> 0, now: Date.now(), theme });
     ref.current = new HostServer(state, saved !== null, saveState);
   }
