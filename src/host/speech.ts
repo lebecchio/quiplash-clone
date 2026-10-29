@@ -3,7 +3,7 @@ export function speak(lines: string[], lang?: string) {
   if (typeof speechSynthesis === 'undefined') return;
   speechSynthesis.cancel();
   for (const line of lines) {
-    const u = new SpeechSynthesisUtterance(line);
+    const u = new SpeechSynthesisUtterance(line.replace(/_{2,}/g, ' … ')); // don't read the blank out as "underscore"
     if (lang) u.lang = lang;
     speechSynthesis.speak(u);
   }
