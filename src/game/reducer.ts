@@ -1,4 +1,5 @@
 import defaultPack from './prompts/default.json';
+import { AVATARS } from './avatars';
 import { buildSlots, matchPrompts } from './assign';
 import { makeRoomCode, mulberry32, shuffle, type Rng } from './rng';
 import {
@@ -115,7 +116,10 @@ function apply(ctx: Ctx, a: Action) {
       for (let n = 2; s.players.some((p) => p.name.toLowerCase() === name.toLowerCase()); n++) {
         name = `${base.slice(0, MAX_NAME_LEN - 3)} ${n}`;
       }
-      s.players.push({ id: `p${s.players.length + 1}`, token: a.token, name, connected: true, score: 0 });
+      const free = AVATARS.filter((x) => !s.players.some((p) => p.avatar === x));
+      const wanted = (AVATARS as readonly string[]).includes(a.avatar ?? '') ? a.avatar! : '';
+      const avatar = free.includes(wanted as (typeof AVATARS)[number]) ? wanted : (free[0] ?? AVATARS[0]);
+      s.players.push({ id: `p${s.players.length + 1}`, token: a.token, name, avatar, connected: true, score: 0 });
       return;
     }
     case 'reconnect':

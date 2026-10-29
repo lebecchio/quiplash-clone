@@ -158,7 +158,7 @@ export class PhoneClient {
     if (this.conn?.open) this.conn.send(msg);
   }
 
-  join(name: string) {
+  join(name: string, avatar: string) {
     const saved = { token: this.saved?.token ?? newToken(), name };
     this.saved = saved;
     try {
@@ -167,7 +167,7 @@ export class PhoneClient {
       /* private mode: rejoin after reload won't work, play still does */
     }
     this.update({ joined: true, rejected: null });
-    this.send({ type: 'join', token: saved.token, name });
+    this.send({ type: 'join', token: saved.token, name, avatar });
   }
 
   act(action: Exclude<PhoneAction, { type: 'join' | 'rejoin' }>) {

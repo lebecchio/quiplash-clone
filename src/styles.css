@@ -121,3 +121,9 @@ label { display: block; font-weight: 600; margin-top: 12px; color: var(--muted);
   .lobby, .duel, .finals { grid-template-columns: 1fr; }
   .screen.host { padding: 20px; }
 }
+
+.avatars { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin: 8px 0 16px; }
+.avatar-btn { font-size: 1.6rem; padding: 6px 0; margin: 0; border-radius: 16px; background: var(--card); }
+.avatar-btn.picked { background: var(--grad-cool); box-shadow: 0 0 0 3px var(--violet); transform: scale(1.1); }
+.scoreboard .avatar { font-size: 1.2em; }
+.music-hint { text-align: center; color: var(--muted); }

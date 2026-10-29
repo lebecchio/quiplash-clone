@@ -2,7 +2,7 @@ import type { View } from '../game/view';
 
 /** What a phone may ask for. The host adds the player id from the connection. */
 export type PhoneAction =
-  | { type: 'join'; token: string; name: string }
+  | { type: 'join'; token: string; name: string; avatar?: string }
   | { type: 'rejoin'; token: string }
   | { type: 'submitPrompt'; text: string }
   | { type: 'answer'; matchupId: number; text: string }
@@ -38,7 +38,9 @@ export function parseClientMessage(raw: unknown): PhoneAction | null {
   const a = m.action as Record<string, unknown>;
   switch (a.type) {
     case 'join':
-      return str(a.token, 100) && str(a.name) ? { type: 'join', token: a.token, name: a.name } : null;
+      return str(a.token, 100) && str(a.name) && (a.avatar === undefined || str(a.avatar, 16))
+        ? { type: 'join', token: a.token, name: a.name, avatar: a.avatar }
+        : null;
     case 'rejoin':
       return str(a.token, 100) ? { type: 'rejoin', token: a.token } : null;
     case 'submitPrompt':

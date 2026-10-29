@@ -1,3 +1,4 @@
+import { AVATARS } from '../game/avatars';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { View } from '../game/view';
 import { PhoneClient } from '../net/client';
@@ -61,13 +62,29 @@ function Phone({ client, code }: { client: PhoneClient; code: string }) {
 
 function NameForm({ client, connected }: { client: PhoneClient; connected: boolean }) {
   const [name, setName] = useState('');
+  const [avatar, setAvatar] = useState<string>(() => AVATARS[Math.floor(Math.random() * AVATARS.length)]);
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (name.trim()) client.join(name);
+        if (name.trim()) client.join(name, avatar);
       }}
     >
+      <label>Pick your avatar</label>
+      <div className="avatars" role="radiogroup" aria-label="Avatar">
+        {AVATARS.map((a) => (
+          <button
+            type="button"
+            key={a}
+            role="radio"
+            aria-checked={a === avatar}
+            className={`avatar-btn${a === avatar ? ' picked' : ''}`}
+            onClick={() => setAvatar(a)}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
       <label htmlFor="name">Your name</label>
       <input id="name" value={name} maxLength={15} autoComplete="off" onChange={(e) => setName(e.target.value)} />
       <button className="big" disabled={!name.trim() || !connected}>
@@ -80,7 +97,9 @@ function NameForm({ client, connected }: { client: PhoneClient; connected: boole
 function TopBar({ view, offset }: { view: View; offset: number }) {
   return (
     <header>
-      <span>{view.me?.name}</span>
+      <span>
+        {view.me?.avatar} {view.me?.name}
+      </span>
       <Countdown deadline={view.deadline} offset={offset} paused={view.paused} />
     </header>
   );

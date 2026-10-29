@@ -4,6 +4,7 @@ import { FINAL_POINTS_PER_VOTE, FINAL_VOTES_PER_PLAYER, MAX_PLAYER_PROMPTS, MIN_
 export interface PlayerInfo {
   id: string;
   name: string;
+  avatar: string;
   connected: boolean;
   score: number;
   isVip: boolean;
@@ -60,7 +61,7 @@ export interface View {
   paused: boolean;
   round: number;
   players: PlayerInfo[];
-  me: { id: string; name: string; isVip: boolean } | null;
+  me: { id: string; name: string; avatar: string; isVip: boolean } | null;
   lobby: { canStart: boolean; minPlayers: number; myPrompts: string[]; maxPrompts: number; promptCount: number } | null;
   tasks: Task[] | null;
   matchup: MatchupView | null;
@@ -104,12 +105,13 @@ export function viewFor(s: GameState, playerId: string | null): View {
     players: s.players.map((p) => ({
       id: p.id,
       name: p.name,
+      avatar: p.avatar,
       connected: p.connected,
       score: p.score,
       isVip: p.id === vip,
       done: done(p.id),
     })),
-    me: me ? { id: me.id, name: me.name, isVip: me.id === vip } : null,
+    me: me ? { id: me.id, name: me.name, avatar: me.avatar, isVip: me.id === vip } : null,
     lobby: null,
     tasks: null,
     matchup: null,

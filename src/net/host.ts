@@ -151,7 +151,7 @@ export class HostServer {
 
   private handleJoin(conn: DataConnection, action: Extract<PhoneAction, { type: 'join' | 'rejoin' }>) {
     if (action.type === 'join') {
-      this.dispatch({ type: 'join', token: action.token, name: action.name });
+      this.dispatch({ type: 'join', token: action.token, name: action.name, avatar: action.avatar });
     }
     const player = this.state.players.find((p) => p.token === action.token);
     if (!player) {

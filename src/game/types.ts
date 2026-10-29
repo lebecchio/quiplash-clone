@@ -35,6 +35,7 @@ export interface Player {
   /** Secret: links a phone to this player. Never put it in a view. */
   token: string;
   name: string;
+  avatar: string;
   connected: boolean;
   score: number;
 }
@@ -106,7 +107,7 @@ interface From extends Timed {
 export type Action =
   | ({ type: 'tick' } & Timed)
   | ({ type: 'newRoomCode' } & Timed)
-  | ({ type: 'join'; token: string; name: string } & Timed)
+  | ({ type: 'join'; token: string; name: string; avatar?: string } & Timed)
   | ({ type: 'reconnect' } & From)
   | ({ type: 'disconnect' } & From)
   | ({ type: 'submitPrompt'; text: string } & From)

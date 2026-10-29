@@ -6,6 +6,7 @@ import { HostServer } from '../net/host';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
 import { loadState, saveState } from './persist';
+import { LobbyMusic } from './music';
 import { speak, stopSpeaking } from './speech';
 
 function useServer(): HostServer {
@@ -30,6 +31,27 @@ export function HostApp() {
   const view = viewFor(state, null);
   const [muted, setMuted] = useState(false);
 
+  // Browsers only allow audio after a click or key press.
+  const [unlocked, setUnlocked] = useState(false);
+  useEffect(() => {
+    const unlock = () => setUnlocked(true);
+    addEventListener('pointerdown', unlock, { once: true });
+    addEventListener('keydown', unlock, { once: true });
+    return () => {
+      removeEventListener('pointerdown', unlock);
+      removeEventListener('keydown', unlock);
+    };
+  }, []);
+
+  // Lobby music while waiting for players.
+  const music = useRef<LobbyMusic | null>(null);
+  const playMusic = unlocked && !muted && view.phase === 'lobby';
+  useEffect(() => {
+    music.current ??= new LobbyMusic();
+    if (playMusic) music.current.start();
+    else music.current.stop();
+  }, [playMusic]);
+
   // Read prompts and answers aloud.
   const m = view.matchup;
   const speechKey = view.phase === 'voting' && m ? `v${view.round}-${m.index}` : view.phase === 'finalAnswering' ? 'final' : '';
@@ -52,6 +74,7 @@ export function HostApp() {
           {status === 'connecting' ? 'Connecting to the PeerJS broker…' : 'Reconnecting to the broker… (the old room can take up to a minute to free up)'}
         </p>
       )}
+      {view.phase === 'lobby' && !unlocked && !muted && <p className="music-hint">🎵 Click anywhere to turn on the lobby music</p>}
       <Body view={view} />
       {view.paused && (
         <div className="overlay">
@@ -89,7 +112,7 @@ function Progress({ view }: { view: View }) {
       {view.players.map((p) => (
         <li key={p.id} className={`${p.done ? 'done' : ''} ${p.connected ? '' : 'gone'}`}>
           {p.done ? '✓ ' : ''}
-          {p.name}
+          {p.avatar} {p.name}
         </li>
       ))}
     </ul>
@@ -209,7 +232,7 @@ function Lobby({ view }: { view: View }) {
           {view.players.map((p) => (
             <li key={p.id} className={p.connected ? '' : 'gone'}>
               {p.isVip ? '★ ' : ''}
-              {p.name}
+              {p.avatar} {p.name}
             </li>
           ))}
         </ul>

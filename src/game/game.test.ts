@@ -443,3 +443,15 @@ describe('determinism', () => {
     expect(t.s.roomCode).not.toBe(code);
   });
 });
+
+describe('avatars', () => {
+  it('keeps a valid, free choice and falls back otherwise', () => {
+    const t = new Table(0);
+    t.do({ type: 'join', token: 'a', name: 'A', avatar: '🦄' });
+    t.do({ type: 'join', token: 'b', name: 'B', avatar: '🦄' });
+    t.do({ type: 'join', token: 'c', name: 'C', avatar: 'not-an-avatar' });
+    const avatars = t.s.players.map((p) => p.avatar);
+    expect(avatars[0]).toBe('🦄');
+    expect(new Set(avatars).size).toBe(3);
+  });
+});
