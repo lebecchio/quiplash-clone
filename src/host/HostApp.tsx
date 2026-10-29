@@ -5,6 +5,8 @@ import { createGame } from '../game/reducer';
 import { viewFor, type View } from '../game/view';
 import { HostServer } from '../net/host';
 import { applyTheme, THEMES } from '../themes';
+import { Carousel } from '../ui/Carousel';
+import { CloverRain } from '../ui/CloverRain';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
 import { loadState, saveState } from './persist';
@@ -69,6 +71,7 @@ export function HostApp({ theme }: { theme: ThemeId }) {
 
   return (
     <main className="screen host">
+      {view.theme === 'lars' && <CloverRain />}
       <button className="mute" onClick={() => setMuted(!muted)}>
         {muted ? '🔇 Muted' : '🔊 Sound on'}
       </button>
@@ -79,7 +82,7 @@ export function HostApp({ theme }: { theme: ThemeId }) {
         </p>
       )}
       {view.phase === 'lobby' && !unlocked && !muted && <p className="music-hint">🎵 Click anywhere to turn on the lobby music</p>}
-      <Body view={view} />
+      <Body view={view} photos={THEMES[view.theme].photos} />
       {view.paused && (
         <div className="overlay">
           <h1>Paused</h1>
@@ -123,11 +126,11 @@ function Progress({ view }: { view: View }) {
   );
 }
 
-function Body({ view }: { view: View }) {
+function Body({ view, photos }: { view: View; photos: string[] }) {
   const m = view.matchup;
   switch (view.phase) {
     case 'lobby':
-      return <Lobby view={view} />;
+      return <Lobby view={view} photos={photos} />;
     case 'answering':
       return (
         <section>
@@ -173,7 +176,10 @@ function Body({ view }: { view: View }) {
       return (
         <section>
           <h1>{view.phase === 'gameOver' ? 'Final scores' : 'Scores'}</h1>
-          <Scoreboard players={view.players} />
+          <div className="with-photos">
+            <Scoreboard players={view.players} />
+            <Carousel photos={photos} />
+          </div>
           {view.phase === 'gameOver' && <p className="muted">The VIP can choose “Play again” on their phone.</p>}
         </section>
       );
@@ -213,7 +219,7 @@ function Body({ view }: { view: View }) {
   }
 }
 
-function Lobby({ view }: { view: View }) {
+function Lobby({ view, photos }: { view: View; photos: string[] }) {
   const [qr, setQr] = useState('');
   const joinUrl = `${location.origin}${location.pathname}#/join?code=${view.roomCode}${view.theme === 'default' ? '' : `&theme=${view.theme}`}`;
   useEffect(() => {
@@ -249,6 +255,7 @@ function Lobby({ view }: { view: View }) {
         </p>
         <p className="muted">Player-written prompts: {view.lobby?.promptCount ?? 0}</p>
       </div>
+      <Carousel photos={photos} />
     </section>
   );
 }

@@ -3,6 +3,7 @@ import { applyTheme } from '../themes';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { View } from '../game/view';
 import { PhoneClient } from '../net/client';
+import { CloverRain } from '../ui/CloverRain';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
 import { useWakeLock } from './useWakeLock';
@@ -53,6 +54,7 @@ function Phone({ client, code, theme }: { client: PhoneClient; code: string; the
 
   return (
     <main className="screen phone">
+      {activeTheme === 'lars' && <CloverRain />}
       <TopBar view={view} offset={snap.clockOffset} />
       {snap.status !== 'connected' && <p className="notice">Reconnecting…</p>}
       {cantConnect}
