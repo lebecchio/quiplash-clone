@@ -467,3 +467,15 @@ describe('themes', () => {
     expect(viewFor(s2, null).theme).toBe('lars');
   });
 });
+
+describe('Danish Lars version', () => {
+  it('uses the Danish prompt pack and "[intet svar]" for blanks', () => {
+    let s = createGame({ seed: 3, theme: 'lars' });
+    expect(s.pack.some((p) => p.startsWith('Det værste'))).toBe(true);
+    for (let i = 1; i <= 3; i++) s = reduce(s, { type: 'join', token: `t${i}`, name: `P${i}`, now: 1 });
+    s = reduce(s, { type: 'start', playerId: 'p1', now: 2 });
+    s = reduce(s, { type: 'skipTimer', playerId: 'p1', now: 3 });
+    expect(s.matchups.every((m) => m.answers.every((a) => a === '[intet svar]'))).toBe(true);
+    expect(s.matchups.every((m) => /[æøå]|[a-z]/i.test(m.prompt))).toBe(true);
+  });
+});

@@ -4,6 +4,7 @@ import type { ThemeId } from '../game/avatars';
 import { createGame } from '../game/reducer';
 import { viewFor, type View } from '../game/view';
 import { HostServer } from '../net/host';
+import { STRINGS, type Strings } from '../i18n';
 import { applyTheme, THEMES } from '../themes';
 import { Carousel } from '../ui/Carousel';
 import { CloverRain } from '../ui/CloverRain';
@@ -34,6 +35,7 @@ export function HostApp({ theme }: { theme: ThemeId }) {
   const state = useSyncExternalStore(server.subscribe, server.getState);
   const status = useSyncExternalStore(server.subscribe, server.getStatus);
   const view = viewFor(state, null);
+  const s = STRINGS[view.theme];
   useEffect(() => applyTheme(view.theme), [view.theme]);
   const [muted, setMuted] = useState(false);
 
@@ -64,8 +66,8 @@ export function HostApp({ theme }: { theme: ThemeId }) {
   const speechKey = view.phase === 'voting' && m ? `v${view.round}-${m.index}` : view.phase === 'finalAnswering' ? 'final' : '';
   useEffect(() => {
     if (!speechKey || muted) return stopSpeaking();
-    if (view.phase === 'voting' && m) speak([m.prompt, m.answers[0], m.answers[1]]);
-    else if (view.final) speak([view.final.prompt]);
+    if (view.phase === 'voting' && m) speak([m.prompt, m.answers[0], m.answers[1]], s.lang);
+    else if (view.final) speak([view.final.prompt], s.lang);
     return stopSpeaking;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [speechKey, muted]);
@@ -74,20 +76,20 @@ export function HostApp({ theme }: { theme: ThemeId }) {
     <main className="screen host">
       {view.theme === 'lars' && <CloverRain />}
       <button className="mute" onClick={() => setMuted(!muted)}>
-        {muted ? '🔇 Muted' : '🔊 Sound on'}
+        {muted ? s.soundOff : s.soundOn}
       </button>
       <Header view={view} />
       {status !== 'ready' && (
         <p className="notice">
-          {status === 'connecting' ? 'Connecting to the PeerJS broker…' : 'Reconnecting to the broker… (the old room can take up to a minute to free up)'}
+          {status === 'connecting' ? s.connectingBroker : s.reconnectingBroker}
         </p>
       )}
-      {view.phase === 'lobby' && !unlocked && !muted && <p className="music-hint">🎵 Click anywhere to turn on the lobby music</p>}
+      {view.phase === 'lobby' && !unlocked && !muted && <p className="music-hint">{s.musicHint}</p>}
       <Body view={view} photos={THEMES[view.theme].photos} />
       {view.paused && (
         <div className="overlay">
-          <h1>Paused</h1>
-          <p>Fewer than 3 players are connected. Waiting for someone to rejoin, or the VIP can end the game.</p>
+          <h1>{s.pausedTitle}</h1>
+          <p>{s.pausedText}</p>
         </div>
       )}
     </main>
@@ -95,20 +97,23 @@ export function HostApp({ theme }: { theme: ThemeId }) {
 }
 
 function Header({ view }: { view: View }) {
+  const s = STRINGS[view.theme];
   const labels: Record<string, string> = {
-    answering: `Round ${view.round}`,
-    voting: `Round ${view.round}`,
-    reveal: `Round ${view.round}`,
-    roundScores: `Round ${view.round} scores`,
-    finalAnswering: 'Final round',
-    finalVoting: 'Final round',
-    finalResults: 'Final round',
-    gameOver: 'Game over',
+    answering: s.round(view.round),
+    voting: s.round(view.round),
+    reveal: s.round(view.round),
+    roundScores: s.roundScores(view.round),
+    finalAnswering: s.finalRound,
+    finalVoting: s.finalRound,
+    finalResults: s.finalRound,
+    gameOver: s.gameOver,
   };
   return (
     <header>
       <span>{labels[view.phase] ?? `${THEMES[view.theme].title} ${THEMES[view.theme].emoji}`}</span>
-      <span>Room {view.roomCode}</span>
+      <span>
+        {s.room} {view.roomCode}
+      </span>
       <Countdown deadline={view.deadline} paused={view.paused} />
     </header>
   );
@@ -128,6 +133,7 @@ function Progress({ view }: { view: View }) {
 }
 
 function Body({ view, photos }: { view: View; photos: string[] }) {
+  const s: Strings = STRINGS[view.theme];
   const m = view.matchup;
   switch (view.phase) {
     case 'lobby':
@@ -135,7 +141,7 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
     case 'answering':
       return (
         <section>
-          <h1>Write your answers on your phone!</h1>
+          <h1>{s.writeAnswers}</h1>
           <Progress view={view} />
         </section>
       );
@@ -145,7 +151,7 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
       return (
         <section>
           <p className="muted">
-            Matchup {m.index + 1} of {m.total}
+            {s.matchup(m.index + 1, m.total)}
           </p>
           <h1 className="prompt">{m.prompt}</h1>
           <div className="duel">
@@ -156,17 +162,17 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
                   <div className="meta">
                     <strong>{m.authors[i]}</strong>
                     <div>
-                      {m.votes[i]} vote{m.votes[i] === 1 ? '' : 's'} · +{m.points[i]}
+                      {s.votes(m.votes[i])} · +{m.points[i]}
                     </div>
                   </div>
                 )}
               </div>
             ))}
           </div>
-          {m.quiplash && <h1 className="quiplash">CLEAN SWEEP!</h1>}
+          {m.quiplash && <h1 className="quiplash">{s.cleanSweep}</h1>}
           {view.phase === 'voting' && (
             <>
-              <p className="muted">Vote on your phone!</p>
+              <p className="muted">{s.voteOnPhone}</p>
               <Progress view={view} />
             </>
           )}
@@ -176,19 +182,19 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
     case 'gameOver':
       return (
         <section>
-          <h1>{view.phase === 'gameOver' ? 'Final scores' : 'Scores'}</h1>
+          <h1>{view.phase === 'gameOver' ? s.finalScores : s.scores}</h1>
           <div className="with-photos">
             <Scoreboard players={view.players} />
             <Carousel photos={photos} />
           </div>
-          {view.phase === 'gameOver' && <p className="muted">The VIP can choose “Play again” on their phone.</p>}
+          {view.phase === 'gameOver' && <p className="muted">{s.playAgainHint}</p>}
         </section>
       );
     case 'finalAnswering':
       return (
         <section>
           <h1 className="prompt">{view.final?.prompt}</h1>
-          <p className="muted">Everyone answers this one. Write yours on your phone!</p>
+          <p className="muted">{s.finalEveryone}</p>
           <Progress view={view} />
         </section>
       );
@@ -200,14 +206,14 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
       return (
         <section>
           <h1 className="prompt">{view.final?.prompt}</h1>
-          {!results && <p className="muted">Each player picks up to 3 favorites on their phone.</p>}
+          {!results && <p className="muted">{s.finalPick}</p>}
           <ul className="finals">
             {answers.map((a) => (
               <li key={a.index}>
                 <span className="text">{a.text}</span>
                 {results && (
                   <span className="meta">
-                    {a.author} · {a.votes} vote{a.votes === 1 ? '' : 's'} · +{a.points}
+                    {a.author} · {s.votes(a.votes ?? 0)} · +{a.points}
                   </span>
                 )}
               </li>
@@ -221,6 +227,7 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
 }
 
 function Lobby({ view, photos }: { view: View; photos: string[] }) {
+  const s = STRINGS[view.theme];
   const [qr, setQr] = useState('');
   const joinUrl = `${location.origin}${location.pathname}#/join?code=${view.roomCode}${view.theme === 'default' ? '' : `&theme=${view.theme}`}`;
   useEffect(() => {
@@ -230,15 +237,13 @@ function Lobby({ view, photos }: { view: View; photos: string[] }) {
   return (
     <section className="lobby">
       <div className="join">
-        <p>Join on your phone</p>
+        <p>{s.joinOnPhone}</p>
         <div className="code">{view.roomCode}</div>
-        {qr && <img src={qr} alt={`QR code to join room ${view.roomCode}`} width={260} height={260} />}
+        {qr && <img src={qr} alt={s.qrAlt(view.roomCode)} width={260} height={260} />}
         <p className="muted small">{joinUrl}</p>
       </div>
       <div>
-        <h2>
-          Players ({view.players.length}/12)
-        </h2>
+        <h2>{s.players(view.players.length)}</h2>
         <ul className="chips">
           {view.players.map((p) => (
             <li key={p.id} className={p.connected ? '' : 'gone'}>
@@ -250,11 +255,11 @@ function Lobby({ view, photos }: { view: View; photos: string[] }) {
         <p className="muted">
           {vip
             ? view.lobby?.canStart
-              ? `${vip.name} (VIP) can start the game from their phone.`
-              : `Need at least ${view.lobby?.minPlayers} players. ${vip.name} is the VIP.`
-            : 'Waiting for the first player…'}
+              ? s.vipCanStart(vip.name)
+              : s.needMore(view.lobby?.minPlayers ?? 3, vip.name)
+            : s.waitingFirst}
         </p>
-        <p className="muted">Player-written prompts: {view.lobby?.promptCount ?? 0}</p>
+        <p className="muted">{s.promptCount(view.lobby?.promptCount ?? 0)}</p>
       </div>
       <Carousel photos={photos} />
     </section>

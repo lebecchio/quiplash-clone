@@ -13,7 +13,7 @@ export interface ThemeInfo {
 export const THEMES: Record<ThemeId, ThemeInfo> = {
   default: { title: 'Banter Bash', emoji: '', photos: [] },
   lars: {
-    title: "Lars' Lucky Banter Bash",
+    title: 'Gamle Lars spillet',
     emoji: '🍀',
     photos: ['lars/photo-1.jpg', 'lars/photo-2.jpg', 'lars/photo-3.jpg'],
     music: 'lars/lobby.mp3',

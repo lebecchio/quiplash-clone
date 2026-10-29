@@ -1,4 +1,5 @@
 import { avatarsFor, type ThemeId } from '../game/avatars';
+import { STRINGS, type Strings } from '../i18n';
 import { applyTheme } from '../themes';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { View } from '../game/view';
@@ -7,12 +8,6 @@ import { CloverRain } from '../ui/CloverRain';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
 import { useWakeLock } from './useWakeLock';
-
-const REJECTIONS = {
-  started: 'That game has already started. You can only join in the lobby.',
-  full: 'That room is full (12 players max).',
-  unknown: 'The host no longer knows you. Join again.',
-} as const;
 
 export function PhoneApp({ code, theme }: { code: string; theme: ThemeId }) {
   const [client, setClient] = useState<PhoneClient | null>(null);
@@ -30,22 +25,23 @@ function Phone({ client, code, theme }: { client: PhoneClient; code: string; the
   const snap = useSyncExternalStore(client.subscribe, client.getSnapshot);
   const { view } = snap;
   const activeTheme = view?.theme ?? theme;
+  const s = STRINGS[activeTheme];
   useEffect(() => applyTheme(activeTheme), [activeTheme]);
   useWakeLock(!!view && view.phase !== 'lobby' && view.phase !== 'gameOver');
 
   const cantConnect = snap.cantConnect && (
-    <p className="notice">Can't connect? Join the host's Wi-Fi</p>
+    <p className="notice">{s.cantConnect}</p>
   );
 
   if (!snap.joined || !view) {
     return (
       <main className="screen phone">
-        <h1>Room {code}</h1>
-        {snap.rejected && <p className="notice">{REJECTIONS[snap.rejected]}</p>}
+        <h1>{s.roomTitle(code)}</h1>
+        {snap.rejected && <p className="notice">{s.rejected[snap.rejected]}</p>}
         {!snap.joined ? (
           <NameForm client={client} connected={snap.status === 'connected'} theme={activeTheme} />
         ) : (
-          <p>Connecting…</p>
+          <p>{s.connecting}</p>
         )}
         {cantConnect}
       </main>
@@ -56,9 +52,9 @@ function Phone({ client, code, theme }: { client: PhoneClient; code: string; the
     <main className="screen phone">
       {activeTheme === 'lars' && <CloverRain />}
       <TopBar view={view} offset={snap.clockOffset} />
-      {snap.status !== 'connected' && <p className="notice">Reconnecting…</p>}
+      {snap.status !== 'connected' && <p className="notice">{s.reconnecting}</p>}
       {cantConnect}
-      {view.paused && <p className="notice">Paused: fewer than 3 players connected.</p>}
+      {view.paused && <p className="notice">{s.pausedBanner}</p>}
       <Screen view={view} client={client} />
       {view.me?.isVip && <VipControls view={view} client={client} />}
     </main>
@@ -66,6 +62,7 @@ function Phone({ client, code, theme }: { client: PhoneClient; code: string; the
 }
 
 function NameForm({ client, connected, theme }: { client: PhoneClient; connected: boolean; theme: ThemeId }) {
+  const s = STRINGS[theme];
   const avatars = avatarsFor(theme);
   const [name, setName] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
@@ -78,7 +75,7 @@ function NameForm({ client, connected, theme }: { client: PhoneClient; connected
         if (name.trim()) client.join(name, avatar);
       }}
     >
-      <label>Pick your avatar</label>
+      <label>{s.pickAvatar}</label>
       <div className="avatars" role="radiogroup" aria-label="Avatar">
         {avatars.map((a) => (
           <button
@@ -93,10 +90,10 @@ function NameForm({ client, connected, theme }: { client: PhoneClient; connected
           </button>
         ))}
       </div>
-      <label htmlFor="name">Your name</label>
+      <label htmlFor="name">{s.yourName}</label>
       <input id="name" value={name} maxLength={15} autoComplete="off" onChange={(e) => setName(e.target.value)} />
       <button className="big" disabled={!name.trim() || !connected}>
-        {connected ? 'Join' : 'Connecting…'}
+        {connected ? s.join : s.connecting}
       </button>
     </form>
   );
@@ -114,6 +111,7 @@ function TopBar({ view, offset }: { view: View; offset: number }) {
 }
 
 function Screen({ view, client }: { view: View; client: PhoneClient }) {
+  const s: Strings = STRINGS[view.theme];
   const me = view.players.find((p) => p.id === view.me?.id);
   switch (view.phase) {
     case 'lobby':
@@ -122,7 +120,7 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
       return <AnswerScreen view={view} client={client} />;
     case 'voting': {
       const m = view.matchup!;
-      if (m.iAmAuthor) return <Message title="This one is yours!" text="Others are voting on your answer." />;
+      if (m.iAmAuthor) return <Message title={s.yoursTitle} text={s.yoursText} />;
       return (
         <section>
           <h2>{m.prompt}</h2>
@@ -135,7 +133,7 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
               {m.answers[i]}
             </button>
           ))}
-          {m.myVote !== null && <p className="muted">Vote saved. You can change it until time is up.</p>}
+          {m.myVote !== null && <p className="muted">{s.voteSaved}</p>}
         </section>
       );
     }
@@ -143,7 +141,7 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
       const m = view.matchup!;
       return (
         <Message
-          title={m.quiplash ? 'CLEAN SWEEP!' : 'Results'}
+          title={m.quiplash ? s.cleanSweep : s.results}
           text={m.authors && m.points ? m.answers.map((a, i) => `${a} (${m.authors![i]}, +${m.points![i]})`).join('  vs  ') : ''}
         />
       );
@@ -152,7 +150,7 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
     case 'gameOver':
       return (
         <section>
-          <h2>{view.phase === 'gameOver' ? 'Final scores' : 'Scores'}</h2>
+          <h2>{view.phase === 'gameOver' ? s.finalScores : s.scores}</h2>
           <Scoreboard players={view.players} meId={me?.id} />
         </section>
       );
@@ -161,7 +159,7 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
     case 'finalVoting':
       return <FinalVoteScreen view={view} client={client} />;
     case 'finalResults':
-      return <Message title="Final results" text="Look at the big screen!" />;
+      return <Message title={s.finalResultsTitle} text={s.lookBigScreen} />;
   }
 }
 
@@ -175,15 +173,15 @@ function Message({ title, text }: { title: string; text: string }) {
 }
 
 function LobbyScreen({ view, client }: { view: View; client: PhoneClient }) {
+  const s = STRINGS[view.theme];
   const [text, setText] = useState('');
   const lobby = view.lobby!;
   const full = lobby.myPrompts.length >= lobby.maxPrompts;
   return (
     <section>
-      <h2>You're in!</h2>
+      <h2>{s.inTitle}</h2>
       <p className="muted">
-        {view.players.length} player{view.players.length === 1 ? '' : 's'} so far. Add up to {lobby.maxPrompts} prompts
-        for others to answer (optional).
+        {s.lobbyInfo(view.players.length, lobby.maxPrompts)}
       </p>
       <ul className="list">
         {lobby.myPrompts.map((p) => (
@@ -198,15 +196,15 @@ function LobbyScreen({ view, client }: { view: View; client: PhoneClient }) {
             setText('');
           }}
         >
-          <input value={text} maxLength={100} placeholder="e.g. The worst name for a pet snake" onChange={(e) => setText(e.target.value)} />
-          <button disabled={!text.trim()}>Add prompt</button>
+          <input value={text} maxLength={100} placeholder={s.promptPlaceholder} onChange={(e) => setText(e.target.value)} />
+          <button disabled={!text.trim()}>{s.addPrompt}</button>
         </form>
       )}
       {view.me?.isVip && (
         <>
-          <p>You're the VIP.</p>
+          <p>{s.youAreVip}</p>
           <button className="big primary" disabled={!lobby.canStart} onClick={() => client.act({ type: 'start' })}>
-            {lobby.canStart ? 'Start game' : `Need ${lobby.minPlayers} players`}
+            {lobby.canStart ? s.startGame : s.needPlayers(lobby.minPlayers)}
           </button>
         </>
       )}
@@ -215,18 +213,20 @@ function LobbyScreen({ view, client }: { view: View; client: PhoneClient }) {
 }
 
 function AnswerScreen({ view, client }: { view: View; client: PhoneClient }) {
+  const s = STRINGS[view.theme];
   const [text, setText] = useState('');
   const tasks = view.tasks ?? [];
   const next = tasks.find((t) => t.answer === null);
-  if (!next) return <Message title="Done!" text="Waiting for the others…" />;
+  if (!next) return <Message title={s.doneTitle} text={s.waitingOthers} />;
   const answered = tasks.length - tasks.filter((t) => t.answer === null).length;
   return (
     <section>
       <p className="muted">
-        Prompt {answered + 1} of {tasks.length}
+        {s.promptOf(answered + 1, tasks.length)}
       </p>
       <h2>{next.prompt}</h2>
       <AnswerBox
+        s={s}
         key={next.matchupId}
         text={text}
         setText={setText}
@@ -239,7 +239,7 @@ function AnswerScreen({ view, client }: { view: View; client: PhoneClient }) {
   );
 }
 
-function AnswerBox({ text, setText, onSubmit }: { text: string; setText: (t: string) => void; onSubmit: () => void }) {
+function AnswerBox({ s, text, setText, onSubmit }: { s: Strings; text: string; setText: (t: string) => void; onSubmit: () => void }) {
   return (
     <form
       onSubmit={(e) => {
@@ -248,35 +248,37 @@ function AnswerBox({ text, setText, onSubmit }: { text: string; setText: (t: str
       }}
     >
       <textarea value={text} maxLength={45} rows={3} autoFocus onChange={(e) => setText(e.target.value)} />
-      <p className="muted small">{45 - text.length} characters left</p>
-      <button className="big primary">Submit</button>
+      <p className="muted small">{s.charsLeft(45 - text.length)}</p>
+      <button className="big primary">{s.submit}</button>
     </form>
   );
 }
 
 function FinalAnswerScreen({ view, client }: { view: View; client: PhoneClient }) {
+  const s = STRINGS[view.theme];
   const [text, setText] = useState('');
   const f = view.final!;
-  if (f.answered) return <Message title="Done!" text="Waiting for the others…" />;
+  if (f.answered) return <Message title={s.doneTitle} text={s.waitingOthers} />;
   return (
     <section>
       <h2>{f.prompt}</h2>
-      <AnswerBox text={text} setText={setText} onSubmit={() => client.act({ type: 'answer', matchupId: 0, text })} />
+      <AnswerBox s={s} text={text} setText={setText} onSubmit={() => client.act({ type: 'answer', matchupId: 0, text })} />
     </section>
   );
 }
 
 function FinalVoteScreen({ view, client }: { view: View; client: PhoneClient }) {
+  const s = STRINGS[view.theme];
   const f = view.final!;
   const [picked, setPicked] = useState<number[]>([]);
-  if (f.myVotes) return <Message title="Votes sent!" text="Waiting for the others…" />;
+  if (f.myVotes) return <Message title={s.votesSent} text={s.waitingOthers} />;
   const toggle = (i: number) =>
     setPicked((p) => (p.includes(i) ? p.filter((x) => x !== i) : p.length < f.maxVotes ? [...p, i] : p));
   return (
     <section>
       <h2>{f.prompt}</h2>
       <p className="muted">
-        Pick up to {f.maxVotes} favorites ({picked.length} chosen)
+        {s.pickUpTo(f.maxVotes, picked.length)}
       </p>
       {f.answers.map((a) => (
         <button
@@ -286,41 +288,42 @@ function FinalVoteScreen({ view, client }: { view: View; client: PhoneClient }) 
           onClick={() => toggle(a.index)}
         >
           {a.text}
-          {a.mine ? ' (yours)' : ''}
+          {a.mine ? s.yoursSuffix : ''}
         </button>
       ))}
       <button className="big primary" onClick={() => client.act({ type: 'finalVote', answerIds: picked })}>
-        Send votes
+        {s.sendVotes}
       </button>
     </section>
   );
 }
 
 function VipControls({ view, client }: { view: View; client: PhoneClient }) {
+  const s = STRINGS[view.theme];
   const p = view.phase;
   const active = p !== 'lobby' && p !== 'gameOver';
   return (
     <footer>
-      <strong>VIP</strong>
+      <strong>{s.vip}</strong>
       {p === 'gameOver' && (
         <button className="primary" onClick={() => client.act({ type: 'playAgain' })}>
-          Play again
+          {s.playAgain}
         </button>
       )}
       {active && !view.paused && (
         <>
-          <button onClick={() => client.act({ type: 'skipTimer' })}>Skip timer</button>
-          {(p === 'voting' || p === 'reveal') && <button onClick={() => client.act({ type: 'skipMatchup' })}>Skip matchup</button>}
+          <button onClick={() => client.act({ type: 'skipTimer' })}>{s.skipTimer}</button>
+          {(p === 'voting' || p === 'reveal') && <button onClick={() => client.act({ type: 'skipMatchup' })}>{s.skipMatchup}</button>}
         </>
       )}
       {active && (
         <button
           className="danger"
           onClick={() => {
-            if (confirm('End the game now?')) client.act({ type: 'endGame' });
+            if (confirm(s.confirmEnd)) client.act({ type: 'endGame' });
           }}
         >
-          End game
+          {s.endGame}
         </button>
       )}
     </footer>

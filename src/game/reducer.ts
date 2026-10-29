@@ -1,4 +1,4 @@
-import defaultPack from './prompts/default.json';
+import { noAnswerFor, packFor } from './packs';
 import { avatarsFor, type ThemeId } from './avatars';
 import { buildSlots, matchPrompts } from './assign';
 import { makeRoomCode, mulberry32, shuffle, type Rng } from './rng';
@@ -13,7 +13,6 @@ import {
   MAX_PLAYER_PROMPTS,
   MAX_PROMPT_LEN,
   MIN_PLAYERS,
-  NO_ANSWER,
   QUIPLASH_BONUS,
   REVEAL_SECONDS,
   ROUND_PRIZE,
@@ -34,7 +33,7 @@ interface Ctx {
 export function createGame(opts: { seed: number; now?: number; pack?: string[]; theme?: ThemeId }): GameState {
   const rng = mulberry32(opts.seed);
   const roomCode = makeRoomCode(rng);
-  const pack = opts.pack ?? (defaultPack as string[]);
+  const pack = opts.pack ?? packFor(opts.theme ?? 'default');
   return {
     version: STATE_VERSION,
     seed: rng.state(),
@@ -79,7 +78,7 @@ export function connectedCount(s: GameState): number {
 }
 
 const clean = (text: string, max: number) => text.replace(/\s+/g, ' ').trim().slice(0, max);
-const cleanAnswer = (text: string) => clean(text, MAX_ANSWER_LEN) || NO_ANSWER;
+const cleanAnswer = (text: string, theme: ThemeId) => clean(text, MAX_ANSWER_LEN) || noAnswerFor(theme);
 
 function drawPackPrompt({ s, rng }: Ctx): string {
   if (s.pool.length === 0) s.pool = shuffle(s.pack, rng);
@@ -142,9 +141,9 @@ function apply(ctx: Ctx, a: Action) {
       if (s.phase === 'answering') {
         const m = s.matchups[a.matchupId];
         const idx = m ? m.answerers.indexOf(a.playerId) : -1;
-        if (idx >= 0 && m.answers[idx] === null) m.answers[idx] = cleanAnswer(a.text);
+        if (idx >= 0 && m.answers[idx] === null) m.answers[idx] = cleanAnswer(a.text, s.theme);
       } else if (s.phase === 'finalAnswering' && s.final) {
-        s.final.submitted[a.playerId] ??= cleanAnswer(a.text);
+        s.final.submitted[a.playerId] ??= cleanAnswer(a.text, s.theme);
       }
       return;
     }
@@ -298,7 +297,7 @@ function advance(ctx: Ctx) {
   const { s } = ctx;
   switch (s.phase) {
     case 'answering':
-      for (const m of s.matchups) m.answers = m.answers.map((x) => x ?? NO_ANSWER) as [string, string];
+      for (const m of s.matchups) m.answers = m.answers.map((x) => x ?? noAnswerFor(s.theme)) as [string, string];
       enterVoting(s, 0);
       return;
     case 'voting':
@@ -315,7 +314,7 @@ function advance(ctx: Ctx) {
       return;
     case 'finalAnswering': {
       const f = s.final!;
-      const entries = s.players.map((p) => ({ playerId: p.id, text: f.submitted[p.id] ?? NO_ANSWER }));
+      const entries = s.players.map((p) => ({ playerId: p.id, text: f.submitted[p.id] ?? noAnswerFor(s.theme) }));
       f.answers = shuffle(entries, ctx.rng);
       f.points = f.answers.map(() => 0);
       s.phase = 'finalVoting';
