@@ -7,8 +7,8 @@ import { PhoneApp } from './phone/PhoneApp';
 import './styles.css';
 
 type Route =
-  | { name: 'home'; theme: ThemeId }
-  | { name: 'host'; theme: ThemeId }
+  | { name: 'home' }
+  | { name: 'host'; theme: ThemeId | null }
   | { name: 'join'; code: string; theme: ThemeId };
 
 function parseHash(hash: string): Route {
@@ -16,13 +16,12 @@ function parseHash(hash: string): Route {
   const params = new URLSearchParams(query);
   const t = params.get('theme');
   const theme: ThemeId = isThemeId(t) ? t : 'default';
-  if (path === '/host') return { name: 'host', theme };
+  if (path === '/host') return { name: 'host', theme: isThemeId(t) ? t : null };
   if (path === '/join') {
     const code = (params.get('code') ?? '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
     return { name: 'join', code, theme };
   }
-  if (path === '/lars') return { name: 'home', theme: 'lars' };
-  return { name: 'home', theme: 'default' };
+  return { name: 'home' };
 }
 
 function App() {
@@ -33,37 +32,24 @@ function App() {
     return () => removeEventListener('hashchange', onChange);
   }, []);
 
-  if (route.name === 'host') return <HostApp theme={route.theme} />;
+  if (route.name === 'host') return route.theme ? <HostApp theme={route.theme} /> : <ThemePicker />;
   if (route.name === 'join' && route.code.length === 4) return <PhoneApp code={route.code} theme={route.theme} />;
-  return <Home bad={route.name === 'join'} theme={route.theme} />;
+  return <Home bad={route.name === 'join'} />;
 }
 
-function Home({ bad, theme }: { bad: boolean; theme: ThemeId }) {
+function Home({ bad }: { bad: boolean }) {
   const [code, setCode] = useState('');
-  useEffect(() => applyTheme(theme), [theme]);
-  const info = THEMES[theme];
-  const themeQuery = theme === 'default' ? '' : `&theme=${theme}`;
+  useEffect(() => applyTheme('default'), []);
   return (
     <main className="screen phone">
-      <h1>
-        {info.title} {info.emoji}
-      </h1>
-      <a className="big primary link" href={theme === 'default' ? '#/host' : `#/host?theme=${theme}`}>
+      <h1>Quiplash Clone</h1>
+      <a className="big primary link" href="#/host">
         Host a game on this screen
       </a>
-      {theme === 'default' ? (
-        <a className="big link lars-link" href="#/lars">
-          🍀 Lars version
-        </a>
-      ) : (
-        <a className="big link" href="#/">
-          ← Back to the normal version
-        </a>
-      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          location.hash = `#/join?code=${code}${themeQuery}`;
+          location.hash = `#/join?code=${code}`;
         }}
       >
         <label htmlFor="code">Join with a room code</label>
@@ -73,6 +59,25 @@ function Home({ bad, theme }: { bad: boolean; theme: ThemeId }) {
           Join
         </button>
       </form>
+    </main>
+  );
+}
+
+/** Shown after "Host a game": pick which version of the game to run. */
+function ThemePicker() {
+  useEffect(() => applyTheme('default'), []);
+  return (
+    <main className="screen phone">
+      <h1>Which version?</h1>
+      <a className="big primary link" href="#/host?theme=default">
+        {THEMES.default.title}
+      </a>
+      <a className="big link lars-link" href="#/host?theme=lars">
+        {THEMES.lars.emoji} Lars version
+      </a>
+      <p className="muted">
+        <a href="#/">← Back</a>
+      </p>
     </main>
   );
 }
