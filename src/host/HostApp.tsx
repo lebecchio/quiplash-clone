@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { ThemeId } from '../game/avatars';
 import { createGame } from '../game/reducer';
 import { viewFor, type View } from '../game/view';
-import { HostServer } from '../net/host';
+import { HostServer, type SipEvent } from '../net/host';
 import { STRINGS, type Strings } from '../i18n';
 import { applyTheme, THEMES } from '../themes';
 import { Carousel } from '../ui/Carousel';
@@ -13,6 +13,10 @@ import { Scoreboard } from '../ui/Scoreboard';
 import { loadState, saveState } from './persist';
 import { FileMusic, LobbyMusic } from './music';
 import { speak, stopSpeaking } from './speech';
+import { playSip } from './sips';
+
+const SIP_POPUP_MS = 3000;
+const SIP_QUEUE_MAX = 6;
 
 function useServer(theme: ThemeId): HostServer {
   const ref = useRef<HostServer | null>(null);
@@ -61,6 +65,22 @@ export function HostApp({ theme }: { theme: ThemeId }) {
     else music.current.stop();
   }, [playMusic]);
 
+  // Donated sips: one 3-second popup at a time, the rest wait in line.
+  const [sipQueue, setSipQueue] = useState<SipEvent[]>([]);
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
+  useEffect(
+    () => server.onSip((e) => setSipQueue((q) => (q.length < SIP_QUEUE_MAX ? [...q, e] : q))),
+    [server],
+  );
+  const sip = sipQueue[0];
+  useEffect(() => {
+    if (!sip) return;
+    if (!mutedRef.current) playSip();
+    const t = setTimeout(() => setSipQueue((q) => q.slice(1)), SIP_POPUP_MS);
+    return () => clearTimeout(t);
+  }, [sip?.id]);
+
   // Read prompts and answers aloud.
   const m = view.matchup;
   const speechKey = view.phase === 'voting' && m ? `v${view.round}-${m.index}` : view.phase === 'finalAnswering' ? 'final' : '';
@@ -86,6 +106,17 @@ export function HostApp({ theme }: { theme: ThemeId }) {
       )}
       {view.phase === 'lobby' && !unlocked && !muted && <p className="music-hint">{s.musicHint}</p>}
       <Body view={view} photos={THEMES[view.theme].photos} />
+      {sip && s.sips && (
+        <div className="sip-popup" key={sip.id} role="status">
+          <div className="sip-emoji">🍺</div>
+          <div className="sip-title">
+            {sip.to.avatar} {s.sips.title(sip.to.name)}
+          </div>
+          <div className="sip-from">
+            {sip.from.avatar} {s.sips.from(sip.from.name)}
+          </div>
+        </div>
+      )}
       {view.paused && (
         <div className="overlay">
           <h1>{s.pausedTitle}</h1>

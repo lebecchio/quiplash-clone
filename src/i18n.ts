@@ -72,6 +72,14 @@ export interface Strings {
   skipMatchup: string;
   endGame: string;
   confirmEnd: string;
+  /** Donating sips is only enabled for themes that define these. */
+  sips?: {
+    donate: string;
+    pick: string;
+    sent: (name: string) => string;
+    title: (to: string) => string;
+    from: (from: string) => string;
+  };
 }
 
 const en: Strings = {
@@ -224,6 +232,13 @@ const da: Strings = {
   skipMatchup: 'Spring duel over',
   endGame: 'Afslut spillet',
   confirmEnd: 'Afslut spillet nu?',
+  sips: {
+    donate: '🍺 Giv en tår',
+    pick: 'Hvem skal drikke?',
+    sent: (name) => `Tåren er sendt til ${name}!`,
+    title: (to) => `${to}, tag en tår!`,
+    from: (from) => `givet af ${from}`,
+  },
 };
 
 export const STRINGS: Record<ThemeId, Strings> = { default: en, lars: da };

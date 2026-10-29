@@ -8,6 +8,7 @@ export type PhoneAction =
   | { type: 'answer'; matchupId: number; text: string }
   | { type: 'vote'; choice: 0 | 1 }
   | { type: 'finalVote'; answerIds: number[] }
+  | { type: 'sip'; toId: string }
   | { type: 'start' }
   | { type: 'skipTimer' }
   | { type: 'skipMatchup' }
@@ -55,6 +56,8 @@ export function parseClientMessage(raw: unknown): PhoneAction | null {
       return Array.isArray(a.answerIds) && a.answerIds.length <= 50 && a.answerIds.every(Number.isInteger)
         ? { type: 'finalVote', answerIds: a.answerIds as number[] }
         : null;
+    case 'sip':
+      return str(a.toId, 50) ? { type: 'sip', toId: a.toId } : null;
     case 'start':
     case 'skipTimer':
     case 'skipMatchup':

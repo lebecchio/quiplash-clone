@@ -56,6 +56,7 @@ function Phone({ client, code, theme }: { client: PhoneClient; code: string; the
       {cantConnect}
       {view.paused && <p className="notice">{s.pausedBanner}</p>}
       <Screen view={view} client={client} />
+      {view.players.length > 1 && STRINGS[view.theme].sips && <SipDonor view={view} client={client} />}
       {view.me?.isVip && <VipControls view={view} client={client} />}
     </main>
   );
@@ -294,6 +295,52 @@ function FinalVoteScreen({ view, client }: { view: View; client: PhoneClient }) 
       ))}
       <button className="big primary" onClick={() => client.act({ type: 'finalVote', answerIds: picked })}>
         {s.sendVotes}
+      </button>
+    </section>
+  );
+}
+
+const SIP_COOLDOWN_MS = 4000;
+
+function SipDonor({ view, client }: { view: View; client: PhoneClient }) {
+  const s = STRINGS[view.theme].sips!;
+  const [open, setOpen] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [coolingDown, setCoolingDown] = useState(false);
+  const others = view.players.filter((p) => p.id !== view.me?.id);
+  useEffect(() => {
+    if (!sentTo) return;
+    const t = setTimeout(() => setSentTo(null), SIP_COOLDOWN_MS);
+    return () => clearTimeout(t);
+  }, [sentTo]);
+  if (!open) {
+    return (
+      <button className="big sip-btn" onClick={() => setOpen(true)}>
+        {s.donate}
+      </button>
+    );
+  }
+  return (
+    <section className="sip-picker">
+      <p className="muted">{sentTo ? s.sent(sentTo) : s.pick}</p>
+      <div className="sip-targets">
+        {others.map((p) => (
+          <button
+            key={p.id}
+            disabled={coolingDown}
+            onClick={() => {
+              client.act({ type: 'sip', toId: p.id });
+              setSentTo(p.name);
+              setCoolingDown(true);
+              setTimeout(() => setCoolingDown(false), SIP_COOLDOWN_MS);
+            }}
+          >
+            {p.avatar} {p.name}
+          </button>
+        ))}
+      </div>
+      <button className="link-btn" onClick={() => setOpen(false)}>
+        ✕
       </button>
     </section>
   );
