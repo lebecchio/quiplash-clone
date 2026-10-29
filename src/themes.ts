@@ -15,7 +15,7 @@ export const THEMES: Record<ThemeId, ThemeInfo> = {
   lars: {
     title: 'Gamle Lars spillet',
     emoji: '🍀',
-    photos: ['lars/photo-1.jpg', 'lars/photo-2.jpg', 'lars/photo-3.jpg'],
+    photos: Array.from({ length: 10 }, (_, i) => `lars/photo-${i + 1}.jpg`),
     music: 'lars/lobby.mp3',
   },
 };
