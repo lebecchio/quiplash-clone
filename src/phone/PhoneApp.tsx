@@ -362,14 +362,8 @@ const SIP_COOLDOWN_MS = 4000;
 function SipDonor({ view, client }: { view: View; client: PhoneClient }) {
   const s = STRINGS[view.theme].sips!;
   const [open, setOpen] = useState(false);
-  const [sentTo, setSentTo] = useState<string | null>(null);
   const [coolingDown, setCoolingDown] = useState(false);
   const others = view.players.filter((p) => p.id !== view.me?.id);
-  useEffect(() => {
-    if (!sentTo) return;
-    const t = setTimeout(() => setSentTo(null), SIP_COOLDOWN_MS);
-    return () => clearTimeout(t);
-  }, [sentTo]);
   if (!open) {
     return (
       <button className="big sip-btn" onClick={() => setOpen(true)}>
@@ -379,7 +373,7 @@ function SipDonor({ view, client }: { view: View; client: PhoneClient }) {
   }
   return (
     <section className="sip-picker">
-      <p className="muted">{sentTo ? s.sent(sentTo) : s.pick}</p>
+      <p className="muted">{s.pick}</p>
       <div className="sip-targets">
         {others.map((p) => (
           <button
@@ -387,7 +381,6 @@ function SipDonor({ view, client }: { view: View; client: PhoneClient }) {
             disabled={coolingDown}
             onClick={() => {
               client.act({ type: 'sip', toId: p.id });
-              setSentTo(p.name);
               setCoolingDown(true);
               setTimeout(() => setCoolingDown(false), SIP_COOLDOWN_MS);
             }}
