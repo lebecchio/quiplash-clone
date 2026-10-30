@@ -20,6 +20,9 @@
   { "q": "I hvilken by blev EM-finalen i 1992 spillet?", "options": ["Göteborg", "Stockholm", "Malmö", "Oslo"], "answer": 0 },
   { "q": "Hvad blev slutresultatet, da Danmark slog Uruguay ved VM i 1986?", "options": ["6-1", "5-1", "6-2", "4-1"], "answer": 0 },
   { "q": "Hvilket år udkom den første PlayStation i Japan?", "options": ["1994", "1993", "1995", "1996"], "answer": 0 },
-  { "q": "Hvem anses for at være 'faderen til PlayStation'?", "options": ["Ken Kutaragi", "Shigeru Miyamoto", "Satoru Iwata", "Hideo Kojima"], "answer": 0 },
-  { "q": "Hvilket studie udviklede det første Crash Bandicoot-spil?", "options": ["Naughty Dog", "Insomniac Games", "Santa Monica Studio", "Sucker Punch"], "answer": 0 }
+  { "q": "Hvor mange felter har et europæisk roulettehjul?", "options": ["37", "36", "38", "40"], "answer": 0 },
+  { "q": "Hvad er summen af alle tallene fra 0 til 36 på et roulettehjul?", "options": ["666", "555", "636", "696"], "answer": 0 },
+  { "q": "Hvilken pokerhånd slår et fuldt hus (full house)?", "options": ["Fire ens", "Flush", "Straight", "Tre ens"], "answer": 0 },
+  { "q": "Hvilket kortspil spiller James Bond i filmen Casino Royale fra 2006?", "options": ["Texas Hold'em", "Baccarat", "Blackjack", "Seven-card stud"], "answer": 0 },
+  { "q": "Hvem opfandt den første mekaniske spilleautomat i 1895?", "options": ["Charles Fey", "Benjamin Siegel", "Howard Hughes", "Sam Boyd"], "answer": 0 }
 ]
