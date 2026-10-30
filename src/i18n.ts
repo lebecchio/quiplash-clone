@@ -74,6 +74,8 @@ export interface Strings {
   skipMatchup: string;
   endGame: string;
   confirmEnd: string;
+  podiumIntro: string;
+  podiumWins: (name: string) => string;
   quizHeader: string;
   quizQuestion: (i: number, n: number) => string;
   quizOnPhone: string;
@@ -171,6 +173,8 @@ const en: Strings = {
   skipMatchup: 'Skip matchup',
   endGame: 'End game',
   confirmEnd: 'End the game now?',
+  podiumIntro: 'And the winner is…',
+  podiumWins: (name) => `${name} wins! 🏆`,
   quizHeader: 'Quiz time',
   quizQuestion: (i, n) => `Question ${i} of ${n}`,
   quizOnPhone: 'Pick an answer on your phone. Faster is worth more!',
@@ -260,6 +264,8 @@ const da: Strings = {
   skipMatchup: 'Spring duel over',
   endGame: 'Afslut spillet',
   confirmEnd: 'Afslut spillet nu?',
+  podiumIntro: 'Og vinderen er…',
+  podiumWins: (name) => `${name} vinder! 🏆`,
   quizHeader: 'Quiztid',
   quizQuestion: (i, n) => `Spørgsmål ${i} af ${n}`,
   quizOnPhone: 'Vælg et svar på din telefon. Hurtigere giver flere point!',

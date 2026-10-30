@@ -292,3 +292,50 @@ html[data-theme] button.quiz-btn.quiz-1 { background: linear-gradient(135deg, #8
 html[data-theme] button.quiz-btn.quiz-2 { background: linear-gradient(135deg, #3ad1ac, #2fbf9b); }
 html[data-theme] button.quiz-btn.quiz-3 { background: linear-gradient(135deg, #ffb35c, #ff8f3a); }
 html[data-theme='lars'] .quiz-answer, html[data-theme='lars'] .quiz-points { -webkit-text-fill-color: initial; color: #ffd84a; background: none; text-shadow: 0 3px 0 #062c14; }
+
+/* ---------- Final podium ---------- */
+.podium-screen { position: relative; }
+.podium-screen h1 { text-align: center; font-size: 2.6rem; min-height: 1.2em; margin: 0.15em 0; }
+.winner-title { animation: wobble 1.4s ease-in-out infinite; background: var(--grad-cool); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.podium { list-style: none; padding: 0; margin: 12px auto 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: end; max-width: 760px; }
+.podium-slot { display: flex; flex-direction: column; align-items: center; text-align: center; visibility: hidden; }
+.podium-slot.shown { visibility: visible; }
+.podium-avatar { font-size: 4.2rem; line-height: 1.1; }
+.podium-name { font-size: 1.6rem; font-weight: 700; overflow-wrap: anywhere; }
+.podium-score { font-size: 1.3rem; font-weight: 600; font-variant-numeric: tabular-nums; margin-bottom: 8px; color: var(--violet); }
+.podium-bar { width: 100%; display: flex; justify-content: center; align-items: flex-start; padding-top: 10px; font-size: 2.6rem; border-radius: 22px 22px 0 0; box-shadow: var(--shadow); transform-origin: bottom; }
+.place-1 .podium-bar { height: clamp(100px, 22vh, 210px); background: linear-gradient(180deg, #ffe27a, #f2a900); }
+.place-2 .podium-bar { height: clamp(70px, 15vh, 150px); background: linear-gradient(180deg, #f1f3fa, #aab3cc); }
+.place-3 .podium-bar { height: clamp(50px, 11vh, 110px); background: linear-gradient(180deg, #f0b98a, #b87333); }
+.crown { font-size: 3rem; line-height: 1; }
+.shown .podium-bar { animation: podium-rise 0.9s cubic-bezier(0.2, 1.1, 0.4, 1) both; }
+.shown .podium-avatar, .shown .podium-name, .shown .podium-score, .shown .crown { animation: podium-drop 0.7s cubic-bezier(0.2, 1.5, 0.4, 1) 0.45s both; }
+.place-1.shown .podium-avatar { animation: podium-drop 0.7s cubic-bezier(0.2, 1.5, 0.4, 1) 0.45s both, podium-glow 1.2s ease-in-out 1.2s infinite alternate; }
+.place-1 .podium-avatar { font-size: 5.6rem; }
+.place-1 .podium-name { font-size: 2.1rem; }
+@keyframes podium-rise { from { transform: scaleY(0); } }
+@keyframes podium-drop { from { opacity: 0; transform: translateY(-60px) scale(0.6); } }
+@keyframes podium-glow { to { filter: drop-shadow(0 0 18px #ffd84a); } }
+.scoreboard.plain { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; max-width: 760px; margin: 12px auto 0; animation: pop 0.5s ease-out; }
+.scoreboard.plain li { font-size: 0.95em; padding: 3px 16px; margin: 3px 0; }
+.scoreboard.plain li:first-child { background: var(--card); color: inherit; border: 1.5px solid var(--line); box-shadow: none; }
+.scoreboard.plain li:first-child .rank { color: var(--pink); }
+.podium-screen .muted { text-align: center; }
+html[data-theme='lars'] .winner-title { background: none; -webkit-text-fill-color: initial; color: #ffd84a; text-shadow: 0 5px 0 #b8860b, 0 0 30px #fff08a; }
+html[data-theme='lars'] .podium-name { color: #fff2a8; text-shadow: 0 2px 0 #062c14; }
+html[data-theme='lars'] .podium-score { color: #ffe36b; }
+@media (max-width: 900px) { .podium { gap: 8px; } .podium-avatar { font-size: 2.6rem; } .place-1 .podium-avatar { font-size: 3.4rem; } .podium-name, .place-1 .podium-name { font-size: 1.1rem; } .scoreboard.plain { grid-template-columns: 1fr; } }
+
+/* ---------- Confetti ---------- */
+.confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 9; }
+.confetti span { position: absolute; top: -20px; opacity: 0; animation: confetti-fall 3s linear both; }
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--drift), 108vh) rotate(720deg); }
+}
+/* Seven or more runners-up: three columns so everyone fits on one screen. */
+.scoreboard.plain:has(li:nth-child(7)) { grid-template-columns: repeat(3, 1fr); max-width: 980px; }
+.scoreboard.plain:has(li:nth-child(7)) li { font-size: 0.85em; padding: 1px 12px; margin: 2px 0; gap: 8px; border-width: 2px; }
+html[data-theme='lars'] .scoreboard.plain li:first-child { background: #fff6c9; color: var(--ink); border-color: #b8860b; }
+html[data-theme='lars'] .scoreboard.plain li:first-child .rank { color: #b8860b; }

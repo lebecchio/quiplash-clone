@@ -9,6 +9,7 @@ import { applyTheme, THEMES } from '../themes';
 import { Carousel } from '../ui/Carousel';
 import { CloverRain } from '../ui/CloverRain';
 import { Countdown } from '../ui/Countdown';
+import { Podium } from '../ui/Podium';
 import { Scoreboard } from '../ui/Scoreboard';
 import { loadState, saveState } from './persist';
 import { FileMusic, LobbyMusic } from './music';
@@ -113,7 +114,7 @@ export function HostApp({ theme }: { theme: ThemeId }) {
         </p>
       )}
       {view.phase === 'lobby' && !unlocked && !muted && <p className="music-hint">{s.musicHint}</p>}
-      <Body view={view} photos={THEMES[view.theme].photos} />
+      <Body view={view} photos={THEMES[view.theme].photos} sound={unlocked && !muted} />
       {sip && s.sips && (
         <div className="sip-popup" key={sip.id} role="status">
           <div className="sip-emoji">🍺</div>
@@ -175,7 +176,7 @@ function Progress({ view }: { view: View }) {
   );
 }
 
-function Body({ view, photos }: { view: View; photos: string[] }) {
+function Body({ view, photos, sound }: { view: View; photos: string[]; sound: boolean }) {
   const s: Strings = STRINGS[view.theme];
   const m = view.matchup;
   switch (view.phase) {
@@ -222,16 +223,21 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
         </section>
       );
     case 'roundScores':
-    case 'gameOver':
       return (
         <section>
-          <h1>{view.phase === 'gameOver' ? s.finalScores : s.scores}</h1>
+          <h1>{s.scores}</h1>
           <div className="with-photos">
             <Scoreboard players={view.players} />
             <Carousel photos={photos} />
           </div>
-          {view.phase === 'gameOver' && <p className="muted">{s.playAgainHint}</p>}
         </section>
+      );
+    case 'gameOver':
+      return (
+        <div className="with-photos">
+          <Podium players={view.players} s={s} sound={sound} />
+          <Carousel photos={photos} />
+        </div>
       );
     case 'quiz':
     case 'quizReveal': {

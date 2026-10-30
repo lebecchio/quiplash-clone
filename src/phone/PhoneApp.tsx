@@ -7,6 +7,7 @@ import { PhoneClient } from '../net/client';
 import { CloverRain } from '../ui/CloverRain';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
+import { PODIUM_MS } from '../ui/Podium';
 import { useWakeLock } from './useWakeLock';
 
 export function PhoneApp({ code, theme }: { code: string; theme: ThemeId }) {
@@ -151,11 +152,12 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
         />
       );
     }
-    case 'roundScores':
     case 'gameOver':
+      return <GameOverScreen view={view} meId={me?.id} />;
+    case 'roundScores':
       return (
         <section>
-          <h2>{view.phase === 'gameOver' ? s.finalScores : s.scores}</h2>
+          <h2>{s.scores}</h2>
           <Scoreboard players={view.players} meId={me?.id} />
         </section>
       );
@@ -201,6 +203,23 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
 }
 
 const QUIZ_SHAPES = ['▲', '◆', '●', '■'];
+
+/** Holds the final standings back until the big-screen podium reveal is over. */
+function GameOverScreen({ view, meId }: { view: View; meId?: string }) {
+  const s = STRINGS[view.theme];
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), PODIUM_MS);
+    return () => clearTimeout(t);
+  }, []);
+  if (!ready) return <Message title={s.podiumIntro} text={s.lookBigScreen} />;
+  return (
+    <section>
+      <h2>{s.finalScores}</h2>
+      <Scoreboard players={view.players} meId={meId} />
+    </section>
+  );
+}
 
 function Message({ title, text }: { title: string; text: string }) {
   return (
