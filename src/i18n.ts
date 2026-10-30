@@ -74,6 +74,14 @@ export interface Strings {
   skipMatchup: string;
   endGame: string;
   confirmEnd: string;
+  quizHeader: string;
+  quizQuestion: (i: number, n: number) => string;
+  quizOnPhone: string;
+  quizLocked: string;
+  quizCorrect: string;
+  quizWrong: string;
+  quizNoAnswer: string;
+  quizNobody: string;
   /** Donating sips is only enabled for themes that define these. */
   sips?: {
     donate: string;
@@ -163,6 +171,14 @@ const en: Strings = {
   skipMatchup: 'Skip matchup',
   endGame: 'End game',
   confirmEnd: 'End the game now?',
+  quizHeader: 'Quiz time',
+  quizQuestion: (i, n) => `Question ${i} of ${n}`,
+  quizOnPhone: 'Pick an answer on your phone. Faster is worth more!',
+  quizLocked: 'Locked in! Waiting for the others…',
+  quizCorrect: 'Correct!',
+  quizWrong: 'Not quite.',
+  quizNoAnswer: 'Too slow!',
+  quizNobody: 'Nobody got it.',
 };
 
 const da: Strings = {
@@ -244,6 +260,14 @@ const da: Strings = {
   skipMatchup: 'Spring duel over',
   endGame: 'Afslut spillet',
   confirmEnd: 'Afslut spillet nu?',
+  quizHeader: 'Quiztid',
+  quizQuestion: (i, n) => `Spørgsmål ${i} af ${n}`,
+  quizOnPhone: 'Vælg et svar på din telefon. Hurtigere giver flere point!',
+  quizLocked: 'Svaret er låst! Venter på de andre…',
+  quizCorrect: 'Rigtigt!',
+  quizWrong: 'Desværre, forkert.',
+  quizNoAnswer: 'For langsom!',
+  quizNobody: 'Ingen havde det rigtigt.',
   sips: {
     donate: '🍺 Giv en tår',
     pick: 'Hvem skal drikke?',

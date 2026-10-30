@@ -1,0 +1,14 @@
+[
+  { "q": "Hvad hedder Danmarks længste å?", "options": ["Gudenåen", "Skjern Å", "Odense Å", "Storå"], "answer": 0 },
+  { "q": "Hvilket år blev Danmark medlem af EF (nu EU)?", "options": ["1973", "1957", "1981", "1992"], "answer": 0 },
+  { "q": "Hvem skrev eventyret 'Den lille havfrue'?", "options": ["H.C. Andersen", "Karen Blixen", "Astrid Lindgren", "Søren Kierkegaard"], "answer": 0 },
+  { "q": "Hvor mange spillere har ét fodboldhold på banen?", "options": ["11", "9", "10", "12"], "answer": 0 },
+  { "q": "Hvilket år vandt Danmark EM i fodbold?", "options": ["1992", "1986", "1988", "1996"], "answer": 0 },
+  { "q": "Hvad hedder strædet mellem Sjælland og Sverige?", "options": ["Øresund", "Storebælt", "Lillebælt", "Kattegat"], "answer": 0 },
+  { "q": "Hvad er hovedstaden i Australien?", "options": ["Canberra", "Sydney", "Melbourne", "Perth"], "answer": 0 },
+  { "q": "Hvilken planet kaldes den røde planet?", "options": ["Mars", "Venus", "Jupiter", "Merkur"], "answer": 0 },
+  { "q": "Hvor mange ben har en edderkop?", "options": ["8", "6", "10", "12"], "answer": 0 },
+  { "q": "Hvad er det kemiske tegn for guld?", "options": ["Au", "Ag", "Gd", "Go"], "answer": 0 },
+  { "q": "Hvilket år sank Titanic?", "options": ["1912", "1905", "1921", "1898"], "answer": 0 },
+  { "q": "Hvem malede Mona Lisa?", "options": ["Leonardo da Vinci", "Michelangelo", "Rafael", "Van Gogh"], "answer": 0 }
+]

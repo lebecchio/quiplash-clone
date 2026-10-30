@@ -3,12 +3,17 @@ import { connectedCount, createGame, reduce, vipId } from './reducer';
 import { viewFor } from './view';
 import {
   ANSWER_SECONDS,
+  QUIZ_POINTS,
+  QUIZ_QUESTIONS_PER_BREAK,
+  QUIZ_SECONDS,
+  QUIZ_SPEED_BONUS,
   MAX_ANSWER_LEN,
   NO_ANSWER,
   type Action,
   type GameState,
 } from './types';
 import { mulberry32 } from './rng';
+import { quizFor } from './packs';
 
 type Act = Action extends infer A ? (A extends { now: number } ? Omit<A, 'now'> : never) : never;
 
@@ -488,6 +493,107 @@ describe('player prompts per theme', () => {
       s = reduce(s, { type: 'submitPrompt', playerId: 'p1', text: 'hello?', now: 2 });
       expect(s.playerPrompts).toHaveLength(expected);
       expect(viewFor(s, 'p1').lobby!.maxPrompts).toBe(expected === 1 ? 3 : 0);
+    }
+  });
+});
+
+describe('quiz breaks', () => {
+  /** Plays on (answering, then letting timers run) until the given phase. */
+  const playUntil = (t: Table, phase: GameState['phase']) => {
+    for (let guard = 0; t.s.phase !== phase && guard < 200; guard++) {
+      if (t.s.phase === 'answering') t.answerAll();
+      else t.advanceTime(60_000);
+    }
+    expect(t.s.phase).toBe(phase);
+  };
+
+  it('comes after each round, before the next one', () => {
+    const t = new Table(4);
+    t.start();
+    playUntil(t, 'roundScores');
+    expect(t.s.round).toBe(1);
+    t.advanceTime(60_000);
+    expect(t.s.phase).toBe('quiz');
+    for (let q = 0; q < QUIZ_QUESTIONS_PER_BREAK; q++) {
+      expect(t.s.phase).toBe('quiz');
+      t.advanceTime(60_000);
+      expect(t.s.phase).toBe('quizReveal');
+      t.advanceTime(60_000);
+    }
+    expect(t.s.phase).toBe('answering');
+    expect(t.s.round).toBe(2);
+    playUntil(t, 'roundScores');
+    t.advanceTime(60_000);
+    expect(t.s.phase).toBe('quiz');
+    for (let q = 0; q < QUIZ_QUESTIONS_PER_BREAK * 2; q++) t.advanceTime(60_000);
+    expect(t.s.phase).toBe('finalAnswering');
+  });
+
+  const toQuiz = () => {
+    const t = new Table(3);
+    t.start();
+    playUntil(t, 'quiz');
+    return t;
+  };
+
+  it('pays 500 plus a speed bonus for a correct answer, nothing for a wrong one', () => {
+    const t = toQuiz();
+    const correct = t.s.quiz!.questions[0].answer;
+    const wrong = ((correct + 1) % 4) as 0 | 1 | 2 | 3;
+    const before = t.s.players.map((p) => p.score);
+    t.do({ type: 'quizAnswer', playerId: 'p1', choice: correct }); // instantly: full bonus
+    t.t += (QUIZ_SECONDS * 1000) / 2;
+    t.do({ type: 'quizAnswer', playerId: 'p2', choice: correct }); // halfway: half the bonus
+    t.do({ type: 'quizAnswer', playerId: 'p3', choice: wrong });
+    expect(t.s.phase).toBe('quizReveal');
+    const gained = t.s.players.map((p, i) => p.score - before[i]);
+    expect(gained).toEqual([QUIZ_POINTS + QUIZ_SPEED_BONUS, QUIZ_POINTS + QUIZ_SPEED_BONUS / 2, 0]);
+  });
+
+  it('locks the first answer and ignores answers outside the quiz', () => {
+    const t = toQuiz();
+    const correct = t.s.quiz!.questions[0].answer;
+    const wrong = ((correct + 1) % 4) as 0 | 1 | 2 | 3;
+    t.do({ type: 'quizAnswer', playerId: 'p1', choice: wrong });
+    t.do({ type: 'quizAnswer', playerId: 'p1', choice: correct });
+    expect(t.s.quiz!.answers.p1.choice).toBe(wrong);
+    const lobby = new Table(3);
+    lobby.do({ type: 'quizAnswer', playerId: 'p1', choice: 0 });
+    expect(lobby.s.quiz).toBeNull();
+  });
+
+  it('moves on early once everyone connected has answered', () => {
+    const t = toQuiz();
+    for (const id of t.ids) t.do({ type: 'quizAnswer', playerId: id, choice: 0 });
+    expect(t.s.phase).toBe('quizReveal');
+  });
+
+  it('never shows the correct answer before the reveal', () => {
+    const t = toQuiz();
+    const during = JSON.stringify(viewFor(t.s, 'p1').quiz);
+    expect(viewFor(t.s, 'p1').quiz!.correct).toBeNull();
+    expect(viewFor(t.s, null).quiz!.counts).toBeNull();
+    expect(during).not.toContain('"answer"');
+    for (const id of t.ids) t.do({ type: 'quizAnswer', playerId: id, choice: 0 });
+    expect(viewFor(t.s, 'p1').quiz!.correct).toBe(t.s.quiz!.questions[0].answer);
+  });
+
+  it('keeps the right answer pointing at the right option after shuffling', () => {
+    for (const theme of ['default', 'lars'] as const) {
+      const pack = quizFor(theme);
+      for (const src of pack) expect(new Set(src.options).size).toBe(4);
+      const t = new Table(0);
+      t.s = createGame({ seed: 3, now: t.t, theme });
+      for (const id of ['a', 'b', 'c']) t.do({ type: 'join', token: id, name: id });
+      t.start();
+      for (let guard = 0; t.s.phase !== 'quiz' && guard < 200; guard++) {
+        if (t.s.phase === 'answering') t.answerAll();
+        else t.advanceTime(60_000);
+      }
+      for (const drawn of t.s.quiz!.questions) {
+        const src = pack.find((x) => x.q === drawn.q)!;
+        expect(drawn.options[drawn.answer]).toBe(src.options[src.answer]);
+      }
     }
   });
 });

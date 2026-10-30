@@ -159,6 +159,38 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
           <Scoreboard players={view.players} meId={me?.id} />
         </section>
       );
+    case 'quiz': {
+      const q = view.quiz!;
+      return (
+        <section>
+          <p className="muted">{s.quizQuestion(q.index + 1, q.total)}</p>
+          <h2>{q.question}</h2>
+          {q.options.map((o, i) => (
+            <button
+              key={i}
+              disabled={q.myChoice !== null}
+              className={`big quiz-btn quiz-${i}${q.myChoice === i ? ' picked' : ''}`}
+              onClick={() => client.act({ type: 'quizAnswer', choice: i as 0 | 1 | 2 | 3 })}
+            >
+              <span className="quiz-shape">{QUIZ_SHAPES[i]}</span> {o}
+            </button>
+          ))}
+          {q.myChoice !== null && <p className="muted">{s.quizLocked}</p>}
+        </section>
+      );
+    }
+    case 'quizReveal': {
+      const q = view.quiz!;
+      const title = q.myChoice === null ? s.quizNoAnswer : q.myChoice === q.correct ? s.quizCorrect : s.quizWrong;
+      return (
+        <section>
+          <h2>{title}</h2>
+          <p className="muted">{q.question}</p>
+          <p className="quiz-answer">{q.options[q.correct!]}</p>
+          {q.myPoints! > 0 && <p className="quiz-points">+{q.myPoints}</p>}
+        </section>
+      );
+    }
     case 'finalAnswering':
       return <FinalAnswerScreen view={view} client={client} />;
     case 'finalVoting':
@@ -167,6 +199,8 @@ function Screen({ view, client }: { view: View; client: PhoneClient }) {
       return <Message title={s.finalResultsTitle} text={s.lookBigScreen} />;
   }
 }
+
+const QUIZ_SHAPES = ['▲', '◆', '●', '■'];
 
 function Message({ title, text }: { title: string; text: string }) {
   return (

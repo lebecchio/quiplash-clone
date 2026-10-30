@@ -83,10 +83,18 @@ export function HostApp({ theme }: { theme: ThemeId }) {
 
   // Read prompts and answers aloud.
   const m = view.matchup;
-  const speechKey = view.phase === 'voting' && m ? `v${view.round}-${m.index}` : view.phase === 'finalAnswering' ? 'final' : '';
+  const speechKey =
+    view.phase === 'voting' && m
+      ? `v${view.round}-${m.index}`
+      : view.phase === 'quiz' && view.quiz
+        ? `q${view.round}-${view.quiz.index}`
+        : view.phase === 'finalAnswering'
+          ? 'final'
+          : '';
   useEffect(() => {
     if (!speechKey || muted) return stopSpeaking();
     if (view.phase === 'voting' && m) speak([m.prompt, m.answers[0], m.answers[1]], s.lang);
+    else if (view.phase === 'quiz' && view.quiz) speak([view.quiz.question, ...view.quiz.options], s.lang);
     else if (view.final) speak([view.final.prompt], s.lang);
     return stopSpeaking;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,6 +135,8 @@ export function HostApp({ theme }: { theme: ThemeId }) {
   );
 }
 
+const QUIZ_SHAPES = ['▲', '◆', '●', '■'];
+
 function Header({ view }: { view: View }) {
   const s = STRINGS[view.theme];
   const labels: Record<string, string> = {
@@ -134,6 +144,8 @@ function Header({ view }: { view: View }) {
     voting: s.round(view.round),
     reveal: s.round(view.round),
     roundScores: s.roundScores(view.round),
+    quiz: s.quizHeader,
+    quizReveal: s.quizHeader,
     finalAnswering: s.finalRound,
     finalVoting: s.finalRound,
     finalResults: s.finalRound,
@@ -221,6 +233,46 @@ function Body({ view, photos }: { view: View; photos: string[] }) {
           {view.phase === 'gameOver' && <p className="muted">{s.playAgainHint}</p>}
         </section>
       );
+    case 'quiz':
+    case 'quizReveal': {
+      const q = view.quiz;
+      if (!q) return null;
+      const revealed = q.correct !== null;
+      return (
+        <section>
+          <p className="muted">{s.quizQuestion(q.index + 1, q.total)}</p>
+          <h1 className="prompt">{q.question}</h1>
+          <div className="quiz-options">
+            {q.options.map((o, i) => (
+              <div
+                key={i}
+                className={`quiz-option quiz-${i}${revealed ? (i === q.correct ? ' correct' : ' wrong') : ''}`}
+              >
+                <span className="quiz-shape">{QUIZ_SHAPES[i]}</span>
+                <span className="quiz-text">{o}</span>
+                {q.counts && <span className="quiz-count">{q.counts[i]}</span>}
+              </div>
+            ))}
+          </div>
+          {!revealed && (
+            <>
+              <p className="muted">{s.quizOnPhone}</p>
+              <Progress view={view} />
+            </>
+          )}
+          {q.winners && (
+            <ul className="chips">
+              {q.winners.length === 0 && <li>{s.quizNobody}</li>}
+              {q.winners.map((w) => (
+                <li key={w.name} className="done">
+                  {w.avatar} {w.name} +{w.points}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      );
+    }
     case 'finalAnswering':
       return (
         <section>

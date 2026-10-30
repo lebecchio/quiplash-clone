@@ -1,6 +1,6 @@
 import type { ThemeId } from './avatars';
 
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
 
 export const MIN_PLAYERS = 3;
 export const MAX_PLAYERS = 12;
@@ -15,6 +15,12 @@ export const VOTE_SECONDS = 20;
 export const FINAL_VOTE_SECONDS = 30;
 export const REVEAL_SECONDS = 6;
 export const SCORES_SECONDS = 10;
+export const QUIZ_SECONDS = 15;
+export const QUIZ_REVEAL_SECONDS = 6;
+export const QUIZ_QUESTIONS_PER_BREAK = 2;
+export const QUIZ_POINTS = 500;
+/** Extra points for a correct answer, scaled by how much of the timer was left. */
+export const QUIZ_SPEED_BONUS = 500;
 
 export const ROUND_PRIZE = { 1: 1000, 2: 2000 } as const;
 export const QUIPLASH_BONUS = { 1: 250, 2: 500 } as const;
@@ -27,6 +33,8 @@ export type Phase =
   | 'voting'
   | 'reveal'
   | 'roundScores'
+  | 'quiz'
+  | 'quizReveal'
   | 'finalAnswering'
   | 'finalVoting'
   | 'finalResults'
@@ -70,6 +78,23 @@ export interface FinalState {
   points: number[];
 }
 
+export interface QuizQuestion {
+  q: string;
+  options: [string, string, string, string];
+  /** Index of the correct option. */
+  answer: 0 | 1 | 2 | 3;
+}
+
+export interface QuizState {
+  /** This break's questions, with options already shuffled. */
+  questions: QuizQuestion[];
+  index: number;
+  /** playerId -> their locked-in choice and when it arrived */
+  answers: Record<string, { choice: number; at: number }>;
+  /** playerId -> points won on the current question */
+  points: Record<string, number>;
+}
+
 export interface PlayerPrompt {
   authorId: string;
   text: string;
@@ -96,6 +121,8 @@ export interface GameState {
   /** Players who answered two prompts in earlier rounds. */
   doublers: string[];
   final: FinalState | null;
+  quiz: QuizState | null;
+  quizPool: QuizQuestion[];
   deadline: number | null;
   pausedAt: number | null;
 }
@@ -117,6 +144,7 @@ export type Action =
   | ({ type: 'answer'; matchupId: number; text: string } & From)
   | ({ type: 'vote'; choice: 0 | 1 } & From)
   | ({ type: 'finalVote'; answerIds: number[] } & From)
+  | ({ type: 'quizAnswer'; choice: 0 | 1 | 2 | 3 } & From)
   | ({ type: 'start' } & From)
   | ({ type: 'skipTimer' } & From)
   | ({ type: 'skipMatchup' } & From)

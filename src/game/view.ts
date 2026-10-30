@@ -53,6 +53,19 @@ export interface FinalView {
   maxVotes: number;
 }
 
+export interface QuizView {
+  index: number;
+  total: number;
+  question: string;
+  options: string[];
+  myChoice: number | null;
+  /** Everything below is only set once the answer is revealed. */
+  correct: number | null;
+  counts: number[] | null;
+  myPoints: number | null;
+  winners: { name: string; avatar: string; points: number }[] | null;
+}
+
 export interface View {
   role: 'host' | 'player';
   roomCode: string;
@@ -69,6 +82,7 @@ export interface View {
   tasks: Task[] | null;
   matchup: MatchupView | null;
   final: FinalView | null;
+  quiz: QuizView | null;
 }
 
 /** What one client may see. `playerId === null` is the shared host screen. */
@@ -88,6 +102,8 @@ export function viewFor(s: GameState, playerId: string | null): View {
         const m = s.matchups[s.current];
         return m.answerers.includes(id) || id in m.votes;
       }
+      case 'quiz':
+        return id in s.quiz!.answers;
       case 'finalAnswering':
         return id in s.final!.submitted;
       case 'finalVoting':
@@ -120,6 +136,7 @@ export function viewFor(s: GameState, playerId: string | null): View {
     tasks: null,
     matchup: null,
     final: null,
+    quiz: null,
   };
 
   if (phase === 'lobby') {
@@ -157,6 +174,29 @@ export function viewFor(s: GameState, playerId: string | null): View {
       quiplash: revealed && m.quiplash,
       iAmAuthor: !!me && m.answerers.includes(me.id),
       myVote: me && me.id in m.votes ? m.votes[me.id] : null,
+    };
+  }
+
+  if (s.quiz && (phase === 'quiz' || phase === 'quizReveal')) {
+    const q = s.quiz;
+    const question = q.questions[q.index];
+    const revealed = phase === 'quizReveal';
+    const counts = [0, 0, 0, 0];
+    for (const { choice } of Object.values(q.answers)) counts[choice]++;
+    view.quiz = {
+      index: q.index,
+      total: q.questions.length,
+      question: question.q,
+      options: question.options,
+      myChoice: me && me.id in q.answers ? q.answers[me.id].choice : null,
+      correct: revealed ? question.answer : null,
+      counts: revealed ? counts : null,
+      myPoints: revealed && me ? (q.points[me.id] ?? 0) : null,
+      winners: revealed
+        ? Object.entries(q.points)
+            .sort((a, b) => b[1] - a[1])
+            .map(([id, points]) => ({ name: name(s, id), avatar: s.players.find((p) => p.id === id)?.avatar ?? '', points }))
+        : null,
     };
   }
 

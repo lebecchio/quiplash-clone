@@ -264,3 +264,31 @@ html[data-theme='lars'] .carousel { animation: sway 6s ease-in-out infinite alte
 @keyframes logo-twinkle { 50% { transform: scale(0.45) rotate(45deg); opacity: 0.6; } }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .logo, .logo .spark { animation: none; } }
+
+/* ---------- Quiz ---------- */
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.quiz-option {
+  display: flex; align-items: center; gap: 16px; padding: 24px 28px; border-radius: 32px; color: #fff; font-size: 2rem; font-weight: 600;
+  box-shadow: var(--shadow); transition: opacity 0.4s, transform 0.4s;
+}
+.quiz-option .quiz-text { flex: 1; overflow-wrap: anywhere; }
+.quiz-count { background: rgba(255, 255, 255, 0.9); color: var(--ink); border-radius: 999px; padding: 2px 16px; font-variant-numeric: tabular-nums; }
+.quiz-option.wrong { opacity: 0.35; }
+.quiz-option.correct { transform: scale(1.04); box-shadow: 0 0 0 5px #fff, 0 0 0 10px var(--mint), var(--shadow); }
+.quiz-0 { background: linear-gradient(135deg, #ff6fae, #ef5b6b); }
+.quiz-1 { background: linear-gradient(135deg, #8a6cff, #6b4fd6); }
+.quiz-2 { background: linear-gradient(135deg, #3ad1ac, #2fbf9b); }
+.quiz-3 { background: linear-gradient(135deg, #ffb35c, #ff8f3a); }
+button.quiz-btn { color: #fff; border: 0; text-align: left; font-weight: 600; margin: 10px 0; }
+button.quiz-btn.picked { box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--ink); }
+button.quiz-btn:disabled:not(.picked) { opacity: 0.35; }
+.quiz-answer { font-size: 1.6rem; font-weight: 700; }
+.quiz-points { font-size: 3rem; font-weight: 700; margin: 0; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@media (max-width: 900px) { .quiz-options { grid-template-columns: 1fr; } }
+/* The Lars theme restyles every button; keep the four quiz colors on top of it. */
+html[data-theme] button.quiz-btn { color: #fff; border-color: #fff08a; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
+html[data-theme] button.quiz-btn.quiz-0 { background: linear-gradient(135deg, #ff6fae, #ef5b6b); }
+html[data-theme] button.quiz-btn.quiz-1 { background: linear-gradient(135deg, #8a6cff, #6b4fd6); }
+html[data-theme] button.quiz-btn.quiz-2 { background: linear-gradient(135deg, #3ad1ac, #2fbf9b); }
+html[data-theme] button.quiz-btn.quiz-3 { background: linear-gradient(135deg, #ffb35c, #ff8f3a); }
+html[data-theme='lars'] .quiz-answer, html[data-theme='lars'] .quiz-points { -webkit-text-fill-color: initial; color: #ffd84a; background: none; text-shadow: 0 3px 0 #062c14; }

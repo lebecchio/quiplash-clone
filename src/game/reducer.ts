@@ -1,4 +1,4 @@
-import { allowsPlayerPrompts, noAnswerFor, packFor } from './packs';
+import { allowsPlayerPrompts, noAnswerFor, packFor, quizFor } from './packs';
 import { avatarsFor, type ThemeId } from './avatars';
 import { buildSlots, matchPrompts } from './assign';
 import { makeRoomCode, mulberry32, shuffle, type Rng } from './rng';
@@ -14,6 +14,11 @@ import {
   MAX_PROMPT_LEN,
   MIN_PLAYERS,
   QUIPLASH_BONUS,
+  QUIZ_POINTS,
+  QUIZ_QUESTIONS_PER_BREAK,
+  QUIZ_REVEAL_SECONDS,
+  QUIZ_SECONDS,
+  QUIZ_SPEED_BONUS,
   REVEAL_SECONDS,
   ROUND_PRIZE,
   SCORES_SECONDS,
@@ -23,6 +28,7 @@ import {
   type GameState,
   type Matchup,
   type PlayerPrompt,
+  type QuizQuestion,
 } from './types';
 
 interface Ctx {
@@ -50,6 +56,8 @@ export function createGame(opts: { seed: number; now?: number; pack?: string[]; 
     current: 0,
     doublers: [],
     final: null,
+    quiz: null,
+    quizPool: shuffle(quizFor(opts.theme ?? 'default'), rng),
     deadline: null,
     pausedAt: null,
   };
@@ -83,6 +91,18 @@ const cleanAnswer = (text: string, theme: ThemeId) => clean(text, MAX_ANSWER_LEN
 function drawPackPrompt({ s, rng }: Ctx): string {
   if (s.pool.length === 0) s.pool = shuffle(s.pack, rng);
   return s.pool.pop() ?? 'Fill in the blank: ____';
+}
+
+function drawQuizQuestion({ s, rng }: Ctx): QuizQuestion {
+  if (s.quizPool.length === 0) s.quizPool = shuffle(quizFor(s.theme), rng);
+  const src = s.quizPool.pop()!;
+  // Authors list the right answer first; shuffle so the position carries no hint.
+  const order = shuffle([0, 1, 2, 3], rng);
+  return {
+    q: src.q,
+    options: order.map((i) => src.options[i]) as QuizQuestion['options'],
+    answer: order.indexOf(src.answer) as QuizQuestion['answer'],
+  };
 }
 
 function setDeadline(s: GameState, seconds: number) {
@@ -162,6 +182,12 @@ function apply(ctx: Ctx, a: Action) {
       f.votes[a.playerId] = ids;
       return;
     }
+    case 'quizAnswer': {
+      const q = s.quiz;
+      if (s.phase !== 'quiz' || !q || a.playerId in q.answers) return;
+      if (a.choice === 0 || a.choice === 1 || a.choice === 2 || a.choice === 3) q.answers[a.playerId] = { choice: a.choice, at: s.now };
+      return;
+    }
     case 'start':
       if (s.phase === 'lobby' && vipId(s) === a.playerId && connectedCount(s) >= MIN_PLAYERS) startGame(ctx);
       return;
@@ -191,6 +217,8 @@ function startGame(ctx: Ctx) {
   s.players = s.players.filter((p) => p.connected);
   s.pool = shuffle(s.pack, rng);
   s.doublers = [];
+  s.quiz = null;
+  s.quizPool = shuffle(quizFor(s.theme), rng);
   for (const p of s.players) p.score = 0;
   startRound(ctx, 1);
 }
@@ -264,6 +292,33 @@ function scoreMatchup(s: GameState) {
   });
 }
 
+function startQuiz(ctx: Ctx) {
+  const { s } = ctx;
+  const questions = Array.from({ length: QUIZ_QUESTIONS_PER_BREAK }, () => drawQuizQuestion(ctx));
+  s.quiz = { questions, index: 0, answers: {}, points: {} };
+  enterQuizQuestion(s);
+}
+
+function enterQuizQuestion(s: GameState) {
+  s.quiz!.answers = {};
+  s.quiz!.points = {};
+  s.phase = 'quiz';
+  setDeadline(s, QUIZ_SECONDS);
+}
+
+/** Correct answers earn a flat award plus a bonus for the share of the timer left. */
+function scoreQuiz(s: GameState) {
+  const quiz = s.quiz!;
+  const correct = quiz.questions[quiz.index].answer;
+  for (const [id, { choice, at }] of Object.entries(quiz.answers)) {
+    if (choice !== correct) continue;
+    const left = Math.min(1, Math.max(0, ((s.deadline ?? at) - at) / (QUIZ_SECONDS * 1000)));
+    const points = QUIZ_POINTS + Math.round(QUIZ_SPEED_BONUS * left);
+    quiz.points[id] = points;
+    s.players.find((p) => p.id === id)!.score += points;
+  }
+}
+
 function enterFinal(ctx: Ctx) {
   const { s } = ctx;
   s.round = 3;
@@ -284,6 +339,8 @@ function resetToLobby({ s, rng }: Ctx) {
   s.matchups = [];
   s.current = 0;
   s.final = null;
+  s.quiz = null;
+  s.quizPool = shuffle(quizFor(s.theme), rng);
   s.playerPrompts = [];
   s.doublers = [];
   s.pool = shuffle(s.pack, rng);
@@ -309,8 +366,22 @@ function advance(ctx: Ctx) {
       nextMatchup(ctx);
       return;
     case 'roundScores':
-      if (s.round === 1) startRound(ctx, 2);
-      else enterFinal(ctx);
+      startQuiz(ctx);
+      return;
+    case 'quiz':
+      scoreQuiz(s);
+      s.phase = 'quizReveal';
+      setDeadline(s, QUIZ_REVEAL_SECONDS);
+      return;
+    case 'quizReveal':
+      if (s.quiz!.index + 1 < s.quiz!.questions.length) {
+        s.quiz!.index++;
+        enterQuizQuestion(s);
+      } else {
+        s.quiz = null;
+        if (s.round === 1) startRound(ctx, 2);
+        else enterFinal(ctx);
+      }
       return;
     case 'finalAnswering': {
       const f = s.final!;
@@ -358,6 +429,8 @@ function allDone(s: GameState): boolean {
       const m = s.matchups[s.current];
       return connected.every((p) => m.answerers.includes(p.id) || p.id in m.votes);
     }
+    case 'quiz':
+      return connected.every((p) => p.id in s.quiz!.answers);
     case 'finalAnswering':
       return connected.every((p) => p.id in s.final!.submitted);
     case 'finalVoting':

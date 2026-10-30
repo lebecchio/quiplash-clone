@@ -1,0 +1,14 @@
+[
+  { "q": "What is the capital of Australia?", "options": ["Canberra", "Sydney", "Melbourne", "Perth"], "answer": 0 },
+  { "q": "Which planet is known as the Red Planet?", "options": ["Mars", "Venus", "Jupiter", "Mercury"], "answer": 0 },
+  { "q": "How many players does one football team have on the pitch?", "options": ["11", "9", "10", "12"], "answer": 0 },
+  { "q": "Which is the largest ocean on Earth?", "options": ["Pacific", "Atlantic", "Indian", "Arctic"], "answer": 0 },
+  { "q": "How many legs does a spider have?", "options": ["8", "6", "10", "12"], "answer": 0 },
+  { "q": "What is the chemical symbol for gold?", "options": ["Au", "Ag", "Gd", "Go"], "answer": 0 },
+  { "q": "In which year did the Titanic sink?", "options": ["1912", "1905", "1921", "1898"], "answer": 0 },
+  { "q": "Who painted the Mona Lisa?", "options": ["Leonardo da Vinci", "Michelangelo", "Raphael", "Van Gogh"], "answer": 0 },
+  { "q": "How many strings does a standard guitar have?", "options": ["6", "4", "5", "7"], "answer": 0 },
+  { "q": "Which country do LEGO bricks come from?", "options": ["Denmark", "Sweden", "Germany", "The Netherlands"], "answer": 0 },
+  { "q": "What is the smallest prime number?", "options": ["2", "0", "1", "3"], "answer": 0 },
+  { "q": "What is the hardest natural substance?", "options": ["Diamond", "Quartz", "Granite", "Iron"], "answer": 0 }
+]
