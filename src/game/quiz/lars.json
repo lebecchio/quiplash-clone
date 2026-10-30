@@ -10,5 +10,16 @@
   { "q": "Hvor mange ben har en edderkop?", "options": ["8", "6", "10", "12"], "answer": 0 },
   { "q": "Hvad er det kemiske tegn for guld?", "options": ["Au", "Ag", "Gd", "Go"], "answer": 0 },
   { "q": "Hvilket år sank Titanic?", "options": ["1912", "1905", "1921", "1898"], "answer": 0 },
-  { "q": "Hvem malede Mona Lisa?", "options": ["Leonardo da Vinci", "Michelangelo", "Rafael", "Van Gogh"], "answer": 0 }
+  { "q": "Hvem malede Mona Lisa?", "options": ["Leonardo da Vinci", "Michelangelo", "Rafael", "Van Gogh"], "answer": 0 },
+  { "q": "Hvad er logoet for Viborg FF?", "options": ["Trekløver", "Firkløver", "Egeblad", "Bøgeblad"], "answer": 0 },
+  { "q": "Hvad hedder det hold, som Lars har spillet for i København?", "options": ["FC Nyhavn", "FC Christianshavn", "FC Vesterbro", "Nørrebro United"], "answer": 0 },
+  { "q": "Hvad hed PlayStations første håndholdte konsol?", "options": ["PlayStation Portable", "PlayStation Vita", "PocketStation", "PlayStation Mobile"], "answer": 0 },
+  { "q": "Hvad hedder Viborg FF's hjemmebane?", "options": ["Energi Viborg Arena", "MCH Arena", "Blue Water Arena", "Ceres Park"], "answer": 0 },
+  { "q": "Hvilket år vandt Viborg FF DBU Pokalen?", "options": ["2000", "1996", "2003", "2007"], "answer": 0 },
+  { "q": "Hvem scorede Danmarks to mål i EM-finalen i 1992?", "options": ["John Jensen og Kim Vilfort", "Brian Laudrup og Henrik Larsen", "Flemming Povlsen og Kim Vilfort", "John Jensen og Brian Laudrup"], "answer": 0 },
+  { "q": "I hvilken by blev EM-finalen i 1992 spillet?", "options": ["Göteborg", "Stockholm", "Malmö", "Oslo"], "answer": 0 },
+  { "q": "Hvad blev slutresultatet, da Danmark slog Uruguay ved VM i 1986?", "options": ["6-1", "5-1", "6-2", "4-1"], "answer": 0 },
+  { "q": "Hvilket år udkom den første PlayStation i Japan?", "options": ["1994", "1993", "1995", "1996"], "answer": 0 },
+  { "q": "Hvem anses for at være 'faderen til PlayStation'?", "options": ["Ken Kutaragi", "Shigeru Miyamoto", "Satoru Iwata", "Hideo Kojima"], "answer": 0 },
+  { "q": "Hvilket studie udviklede det første Crash Bandicoot-spil?", "options": ["Naughty Dog", "Insomniac Games", "Santa Monica Studio", "Sucker Punch"], "answer": 0 }
 ]
