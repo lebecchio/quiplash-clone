@@ -63,7 +63,7 @@ One Vite app with these folders:
 ### Connection
 - The host registers the PeerJS ID `qlc-<ROOMCODE>`, for example `qlc-ABCD`. If the ID is taken, the host picks a new code.
 - Phones connect to that ID through the free public PeerJS broker.
-- Use only free public STUN servers. There is no TURN relay in version 1.
+- Use free public STUN servers plus a TURN relay (free Open Relay by default, overridable with `VITE_TURN_URLS`, `VITE_TURN_USERNAME`, `VITE_TURN_CREDENTIAL` at build time), so phones on mobile data or isolated Wi-Fi can still connect.
 - After 10 seconds without a connection, the join screen shows "Can't connect? Join the host's Wi-Fi".
 
 ### Messages

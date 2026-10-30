@@ -7,7 +7,13 @@ Full spec: [SPEC.md](SPEC.md).
 ## Play
 
 Open the site, choose **Host a game** on the big screen, then scan the QR code (or enter the 4-letter code) on each phone.
-Phones and host need to reach each other over WebRTC with STUN only (no TURN relay), so if a phone can't connect, put it on the host's Wi-Fi.
+Phones and host connect over WebRTC. When a direct connection isn't possible (phone on mobile data, guest Wi-Fi with client isolation, strict NAT) traffic goes through a TURN relay. By default that is the free [Open Relay](https://www.metered.ca/tools/openrelay/) service; to use your own, set these at build time (locally in `.env.local`, or as repository variables `TURN_URLS`, `TURN_USERNAME`, `TURN_CREDENTIAL` for the GitHub Pages deploy):
+
+```
+VITE_TURN_URLS=turn:turn.example.com:3478,turns:turn.example.com:5349
+VITE_TURN_USERNAME=...
+VITE_TURN_CREDENTIAL=...
+```
 
 ## Develop
 

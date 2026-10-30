@@ -22,6 +22,8 @@ interface Saved {
 
 const CANT_CONNECT_MS = 10_000;
 const RETRY_MS = 2000;
+/** ICE can stall without ever reporting failure; give up on an attempt after this long. */
+const OPEN_TIMEOUT_MS = 15_000;
 const storageKey = (code: string) => `qlc-player-${code}`;
 
 function loadSaved(code: string): Saved | null {
@@ -56,6 +58,7 @@ export class PhoneClient {
   private stopped = false;
   private cantConnectTimer: ReturnType<typeof setTimeout> | null = null;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
+  private openTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private code: string) {
     this.saved = loadSaved(code);
@@ -82,6 +85,7 @@ export class PhoneClient {
     this.stopped = true;
     if (this.cantConnectTimer) clearTimeout(this.cantConnectTimer);
     if (this.retryTimer) clearTimeout(this.retryTimer);
+    if (this.openTimer) clearTimeout(this.openTimer);
     this.peer?.destroy();
   }
 
@@ -120,7 +124,15 @@ export class PhoneClient {
     this.conn?.close();
     const conn = this.peer.connect(peerIdFor(this.code), { reliable: true });
     this.conn = conn;
+    if (this.openTimer) clearTimeout(this.openTimer);
+    this.openTimer = setTimeout(() => {
+      if (conn !== this.conn || conn.open) return;
+      this.conn = null;
+      conn.close();
+      this.scheduleRetry(true);
+    }, OPEN_TIMEOUT_MS);
     conn.on('open', () => {
+      if (this.openTimer) clearTimeout(this.openTimer);
       if (this.cantConnectTimer) clearTimeout(this.cantConnectTimer);
       this.update({ status: 'connected', cantConnect: false });
       if (this.saved) this.send({ type: 'rejoin', token: this.saved.token });

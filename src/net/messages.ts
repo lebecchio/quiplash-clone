@@ -24,9 +24,35 @@ export type HostMessage = { type: 'view'; view: View } | { type: 'rejected'; rea
 export const ROOM_PREFIX = 'qlc-';
 export const peerIdFor = (code: string) => `${ROOM_PREFIX}${code}`;
 
-export const ICE_CONFIG = {
-  // Free public STUN only: no TURN relay in version 1.
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }],
+const env = import.meta.env;
+const turnUrls = (env.VITE_TURN_URLS ?? '').split(',').map((u) => u.trim()).filter(Boolean);
+
+/**
+ * STUN alone only works when both sides can punch through their NAT, which fails for a
+ * phone on mobile data, on a guest Wi-Fi with client isolation, or behind a symmetric NAT:
+ * the phone then sits on "Connecting…" forever. A TURN relay fixes that. Set
+ * VITE_TURN_URLS / VITE_TURN_USERNAME / VITE_TURN_CREDENTIAL at build time to use your own;
+ * otherwise the free Open Relay servers are used.
+ */
+const TURN_SERVERS: RTCIceServer[] = turnUrls.length
+  ? [{ urls: turnUrls, username: env.VITE_TURN_USERNAME, credential: env.VITE_TURN_CREDENTIAL }]
+  : [
+      {
+        urls: [
+          'turn:openrelay.metered.ca:80',
+          'turn:openrelay.metered.ca:443',
+          'turn:openrelay.metered.ca:443?transport=tcp',
+        ],
+        username: 'openrelayproject',
+        credential: 'openrelayproject',
+      },
+    ];
+
+export const ICE_CONFIG: RTCConfiguration = {
+  iceServers: [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+    ...TURN_SERVERS,
+  ],
 };
 
 const str = (v: unknown, max = 200): v is string => typeof v === 'string' && v.length <= max;
