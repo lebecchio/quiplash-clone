@@ -48,6 +48,16 @@ const TURN_SERVERS: RTCIceServer[] = turnUrls.length
       },
     ];
 
+/** The PeerJS broker: the free public cloud server unless VITE_PEER_HOST points at your own. */
+export const BROKER = env.VITE_PEER_HOST
+  ? {
+      host: env.VITE_PEER_HOST,
+      port: Number(env.VITE_PEER_PORT || 443),
+      path: env.VITE_PEER_PATH || '/',
+      secure: env.VITE_PEER_SECURE !== 'false',
+    }
+  : {};
+
 export const ICE_CONFIG: RTCConfiguration = {
   iceServers: [
     { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },

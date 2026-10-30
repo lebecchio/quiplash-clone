@@ -36,6 +36,8 @@ export interface Strings {
   // phone
   rejected: { started: string; full: string; unknown: string };
   cantConnect: string;
+  /** Which step a stuck phone is on, shown with cantConnect. */
+  stuckAt: { broker: string; host: string; link: string };
   roomTitle: (code: string) => string;
   connecting: string;
   reconnecting: string;
@@ -119,6 +121,11 @@ const en: Strings = {
     unknown: 'The host no longer knows you. Join again.',
   },
   cantConnect: "Can't connect? Join the host's Wi-Fi",
+  stuckAt: {
+    broker: "Stuck reaching the PeerJS server. Check this phone's internet connection.",
+    host: "The host can't be found. Check the room code and that the host screen is still open.",
+    link: 'Found the host, but the network is blocking the link between you.',
+  },
   roomTitle: (code) => `Room ${code}`,
   connecting: 'Connecting…',
   reconnecting: 'Reconnecting…',
@@ -195,6 +202,11 @@ const da: Strings = {
     unknown: 'Værten kender dig ikke længere. Deltag igen.',
   },
   cantConnect: 'Kan du ikke forbinde? Join værtens Wi-Fi',
+  stuckAt: {
+    broker: 'Kan ikke nå PeerJS-serveren. Tjek telefonens internetforbindelse.',
+    host: 'Værten kan ikke findes. Tjek rumkoden, og at værtsskærmen stadig er åben.',
+    link: 'Værten er fundet, men netværket blokerer forbindelsen mellem jer.',
+  },
   roomTitle: (code) => `Rum ${code}`,
   connecting: 'Forbinder…',
   reconnecting: 'Forbinder igen…',

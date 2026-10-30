@@ -3,6 +3,7 @@ import { reduce } from '../game/reducer';
 import type { Action, GameState } from '../game/types';
 import { viewFor } from '../game/view';
 import {
+  BROKER,
   ICE_CONFIG,
   parseClientMessage,
   peerIdFor,
@@ -102,7 +103,7 @@ export class HostServer {
   private register() {
     if (this.stopped) return;
     this.peer?.destroy();
-    const peer = new Peer(peerIdFor(this.state.roomCode), { config: ICE_CONFIG });
+    const peer = new Peer(peerIdFor(this.state.roomCode), { ...BROKER, config: ICE_CONFIG });
     this.peer = peer;
 
     peer.on('open', () => {

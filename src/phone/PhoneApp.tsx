@@ -30,7 +30,11 @@ function Phone({ client, code, theme }: { client: PhoneClient; code: string; the
   useWakeLock(!!view && view.phase !== 'lobby' && view.phase !== 'gameOver');
 
   const cantConnect = snap.cantConnect && (
-    <p className="notice">{s.cantConnect}</p>
+    <p className="notice">
+      {s.cantConnect}
+      <br />
+      <small>{s.stuckAt[snap.stage]}</small>
+    </p>
   );
 
   if (!snap.joined || !view) {

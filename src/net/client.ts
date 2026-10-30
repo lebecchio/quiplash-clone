@@ -1,8 +1,10 @@
 import { Peer, type DataConnection } from 'peerjs';
 import type { View } from '../game/view';
-import { ICE_CONFIG, peerIdFor, type ClientMessage, type HostMessage, type PhoneAction, type RejectReason } from './messages';
+import { BROKER, ICE_CONFIG, peerIdFor, type ClientMessage, type HostMessage, type PhoneAction, type RejectReason } from './messages';
 
 export type ClientStatus = 'connecting' | 'connected';
+/** How far a connection attempt got: the broker, finding the host, or the WebRTC link itself. */
+export type ConnectStage = 'broker' | 'host' | 'link';
 
 export interface ClientSnapshot {
   status: ClientStatus;
@@ -10,6 +12,7 @@ export interface ClientSnapshot {
   rejected: RejectReason | null;
   /** True after 10 seconds without a connection. */
   cantConnect: boolean;
+  stage: ConnectStage;
   /** Add to Date.now() to get the host's clock. */
   clockOffset: number;
   joined: boolean;
@@ -48,6 +51,7 @@ export class PhoneClient {
     view: null,
     rejected: null,
     cantConnect: false,
+    stage: 'broker',
     clockOffset: 0,
     joined: false,
   };
@@ -96,13 +100,18 @@ export class PhoneClient {
 
   private createPeer() {
     if (this.stopped) return;
-    const peer = new Peer({ config: ICE_CONFIG });
+    const peer = new Peer({ ...BROKER, config: ICE_CONFIG });
     this.peer = peer;
     peer.on('open', () => this.connect());
     peer.on('disconnected', () => {
       if (!peer.destroyed) peer.reconnect();
     });
-    peer.on('error', () => this.scheduleRetry(true));
+    peer.on('error', (err) => {
+      console.warn('PeerJS error:', err.type, err.message);
+      if (err.type === 'peer-unavailable') this.update({ stage: 'host' });
+      else if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(err.type)) this.update({ stage: 'broker' });
+      this.scheduleRetry(true);
+    });
   }
 
   private scheduleRetry(recreatePeer = false) {
@@ -122,11 +131,14 @@ export class PhoneClient {
   private connect() {
     if (this.stopped || !this.peer) return;
     this.conn?.close();
+    // The broker answered; keep a worse diagnosis from an earlier attempt until this one says otherwise.
+    if (this.snap.stage === 'broker') this.update({ stage: 'link' });
     const conn = this.peer.connect(peerIdFor(this.code), { reliable: true });
     this.conn = conn;
     if (this.openTimer) clearTimeout(this.openTimer);
     this.openTimer = setTimeout(() => {
       if (conn !== this.conn || conn.open) return;
+      this.update({ stage: 'link' });
       this.conn = null;
       conn.close();
       this.scheduleRetry(true);
@@ -138,6 +150,10 @@ export class PhoneClient {
       if (this.saved) this.send({ type: 'rejoin', token: this.saved.token });
     });
     conn.on('data', (raw) => this.onMessage(raw as HostMessage));
+    conn.on('error', (err) => {
+      console.warn('Connection error:', err.type, err.message);
+      if (conn === this.conn && err.type === 'negotiation-failed') this.update({ stage: 'link' });
+    });
     const lost = () => {
       if (conn !== this.conn) return;
       this.armCantConnect();

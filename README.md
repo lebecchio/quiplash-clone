@@ -15,6 +15,10 @@ VITE_TURN_USERNAME=...
 VITE_TURN_CREDENTIAL=...
 ```
 
+Phones and host find each other through the free public PeerJS server (0.peerjs.com). If that is down or blocked, run your own ([`peer`](https://github.com/peers/peerjs-server)) and point the build at it with `VITE_PEER_HOST`, `VITE_PEER_PORT` (default 443), `VITE_PEER_PATH` (default `/`) and `VITE_PEER_SECURE` (default true), or the repository variables `PEER_HOST`, `PEER_PORT`, `PEER_PATH`, `PEER_SECURE`.
+
+If a phone can't connect for 10 seconds, it says which step is stuck: reaching the PeerJS server, finding the host, or opening the link to the host.
+
 ## Develop
 
 ```

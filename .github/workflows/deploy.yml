@@ -31,6 +31,10 @@ jobs:
           VITE_TURN_URLS: ${{ vars.TURN_URLS }}
           VITE_TURN_USERNAME: ${{ vars.TURN_USERNAME }}
           VITE_TURN_CREDENTIAL: ${{ vars.TURN_CREDENTIAL }}
+          VITE_PEER_HOST: ${{ vars.PEER_HOST }}
+          VITE_PEER_PORT: ${{ vars.PEER_PORT }}
+          VITE_PEER_PATH: ${{ vars.PEER_PATH }}
+          VITE_PEER_SECURE: ${{ vars.PEER_SECURE }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
