@@ -17,14 +17,6 @@ export type HostAction = DistributiveOmit<Action, 'now'>;
 export type HostStatus = 'connecting' | 'ready' | 'retrying';
 
 const RETRY_MS = 5000;
-export const SIP_COOLDOWN_MS = 4000;
-
-/** A donated sip. Cosmetic only, so it is an event and never part of the game state. */
-export interface SipEvent {
-  id: number;
-  from: { name: string; avatar: string };
-  to: { name: string; avatar: string };
-}
 
 /**
  * The host screen's browser is the server. It owns the game state, maps each WebRTC
@@ -36,9 +28,6 @@ export class HostServer {
 
   private peer: Peer | null = null;
   private listeners = new Set<() => void>();
-  private sipListeners = new Set<(e: SipEvent) => void>();
-  private lastSip = new Map<string, number>();
-  private sipCount = 0;
   private players = new Map<DataConnection, string>();
   private open = new Set<DataConnection>();
   private timers: ReturnType<typeof setTimeout>[] = [];
@@ -72,10 +61,6 @@ export class HostServer {
   subscribe = (fn: () => void) => {
     this.listeners.add(fn);
     return () => void this.listeners.delete(fn);
-  };
-  onSip = (fn: (e: SipEvent) => void) => {
-    this.sipListeners.add(fn);
-    return () => void this.sipListeners.delete(fn);
   };
   getState = () => this.state;
   getStatus = () => this.status;
@@ -162,27 +147,7 @@ export class HostServer {
     // The sender is whoever owns this connection, never a field in the message.
     const playerId = this.players.get(conn);
     if (!playerId) return;
-    if (action.type === 'sip') {
-      this.handleSip(playerId, action.toId);
-      return;
-    }
     this.dispatch({ ...action, playerId } as HostAction);
-  }
-
-  private handleSip(fromId: string, toId: string) {
-    if (this.state.theme !== 'lars') return;
-    const from = this.state.players.find((p) => p.id === fromId);
-    const to = this.state.players.find((p) => p.id === toId);
-    if (!from || !to || from.id === to.id) return;
-    const now = Date.now();
-    if (now - (this.lastSip.get(fromId) ?? 0) < SIP_COOLDOWN_MS) return;
-    this.lastSip.set(fromId, now);
-    const event: SipEvent = {
-      id: ++this.sipCount,
-      from: { name: from.name, avatar: from.avatar },
-      to: { name: to.name, avatar: to.avatar },
-    };
-    this.sipListeners.forEach((fn) => fn(event));
   }
 
   private handleJoin(conn: DataConnection, action: Extract<PhoneAction, { type: 'join' | 'rejoin' }>) {

@@ -9,7 +9,6 @@ export type PhoneAction =
   | { type: 'vote'; choice: 0 | 1 }
   | { type: 'finalVote'; answerIds: number[] }
   | { type: 'quizAnswer'; choice: 0 | 1 | 2 | 3 }
-  | { type: 'sip'; toId: string }
   | { type: 'start' }
   | { type: 'skipTimer' }
   | { type: 'skipMatchup' }
@@ -95,8 +94,6 @@ export function parseClientMessage(raw: unknown): PhoneAction | null {
         : null;
     case 'quizAnswer':
       return a.choice === 0 || a.choice === 1 || a.choice === 2 || a.choice === 3 ? { type: 'quizAnswer', choice: a.choice } : null;
-    case 'sip':
-      return str(a.toId, 50) ? { type: 'sip', toId: a.toId } : null;
     case 'start':
     case 'skipTimer':
     case 'skipMatchup':
