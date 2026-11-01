@@ -144,6 +144,19 @@ label { display: block; font-weight: 600; margin-top: 12px; color: var(--muted);
 .rain span { position: absolute; top: -3rem; opacity: 0.5; animation: fall linear infinite; }
 @keyframes fall { to { transform: translateY(112vh) rotate(360deg); } }
 
+/* ---------- Lava lamp ---------- */
+.lava { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; filter: blur(28px); }
+.lava span {
+  position: absolute; bottom: -40vmax; opacity: 0.4; border-radius: 50% 50% 46% 54% / 55% 45% 55% 45%;
+  animation: lava-rise ease-in-out infinite;
+}
+@keyframes lava-rise {
+  0% { transform: translate(0, 0) scale(1, 1); border-radius: 50% 50% 46% 54% / 55% 45% 55% 45%; }
+  35% { transform: translate(6vmax, -55vh) scale(0.9, 1.15); border-radius: 42% 58% 60% 40% / 48% 55% 45% 52%; }
+  70% { transform: translate(-5vmax, -105vh) scale(1.15, 0.9); border-radius: 58% 42% 40% 60% / 52% 40% 60% 48%; }
+  100% { transform: translate(0, -150vh) scale(1, 1); border-radius: 50% 50% 46% 54% / 55% 45% 55% 45%; }
+}
+
 /* ---------- Lars version: full casino tack ---------- */
 html[data-theme='lars'] {
   --bg1: #138a43;

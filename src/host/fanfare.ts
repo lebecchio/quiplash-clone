@@ -2,7 +2,7 @@
 let ctx: AudioContext | null = null;
 let noise: AudioBuffer | null = null;
 
-function audio(): AudioContext | null {
+export function audio(): AudioContext | null {
   const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AC) return null;
   ctx ??= new AC();
@@ -15,7 +15,7 @@ function audio(): AudioContext | null {
   return ctx;
 }
 
-function hit(c: AudioContext, t: number, dur: number, highpass: number, vol: number) {
+export function hit(c: AudioContext, t: number, dur: number, highpass: number, vol: number) {
   const src = c.createBufferSource();
   const filter = c.createBiquadFilter();
   const gain = c.createGain();
@@ -29,7 +29,7 @@ function hit(c: AudioContext, t: number, dur: number, highpass: number, vol: num
   src.stop(t + dur + 0.02);
 }
 
-function tone(c: AudioContext, freq: number, t: number, dur: number, type: OscillatorType, vol: number, cutoff = 3000) {
+export function tone(c: AudioContext, freq: number, t: number, dur: number, type: OscillatorType, vol: number, cutoff = 3000) {
   const osc = c.createOscillator();
   const filter = c.createBiquadFilter();
   const gain = c.createGain();

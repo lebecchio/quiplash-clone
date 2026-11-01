@@ -17,6 +17,9 @@ const LEAD = [
 const midi = (n: number) => 440 * 2 ** ((n - 69) / 12);
 
 export class LobbyMusic {
+  /** `quiet` drops the melody and the volume so the loop can sit under gameplay. */
+  constructor(private quiet = false) {}
+
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private noise: AudioBuffer | null = null;
@@ -40,7 +43,7 @@ export class LobbyMusic {
     }
     this.master.gain.cancelScheduledValues(ctx.currentTime);
     this.master.gain.setValueAtTime(0.0001, ctx.currentTime);
-    this.master.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 1.5);
+    this.master.gain.exponentialRampToValueAtTime(this.quiet ? 0.07 : 0.22, ctx.currentTime + 1.5);
     this.step = 0;
     this.nextTime = ctx.currentTime + 0.1;
     this.timer = setInterval(() => this.schedule(), 50);
@@ -64,7 +67,7 @@ export class LobbyMusic {
       const i = s & 15;
       const t = this.nextTime + (i % 2 === 1 ? STEP * SWING : 0);
       if (BASS[bar][i]) this.tone(midi(BASS[bar][i]), t, STEP * 1.6, 'sawtooth', 0.5, 500);
-      if (LEAD[bar][i]) this.tone(midi(LEAD[bar][i]), t, STEP * 2.2, 'triangle', 0.35, 4000);
+      if (!this.quiet && LEAD[bar][i]) this.tone(midi(LEAD[bar][i]), t, STEP * 2.2, 'triangle', 0.35, 4000);
       if (i % 4 === 0) this.kick(t);
       if (i % 8 === 4) this.hit(t, 0.12, 1800, 0.5);
       if (i % 2 === 1) this.hit(t, 0.03, 7000, 0.18);

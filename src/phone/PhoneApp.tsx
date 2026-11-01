@@ -5,6 +5,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { View } from '../game/view';
 import { PhoneClient } from '../net/client';
 import { CloverRain } from '../ui/CloverRain';
+import { LavaLamp } from '../ui/LavaLamp';
 import { Countdown } from '../ui/Countdown';
 import { Scoreboard } from '../ui/Scoreboard';
 import { PODIUM_MS } from '../ui/Podium';
@@ -55,7 +56,7 @@ function Phone({ client, code, theme }: { client: PhoneClient; code: string; the
 
   return (
     <main className="screen phone">
-      {activeTheme === 'lars' && <CloverRain />}
+      {activeTheme === 'lars' ? <CloverRain /> : <LavaLamp />}
       <TopBar view={view} offset={snap.clockOffset} />
       {snap.status !== 'connected' && <p className="notice">{s.reconnecting}</p>}
       {cantConnect}

@@ -8,6 +8,8 @@ import { STRINGS, type Strings } from '../i18n';
 import { applyTheme, THEMES } from '../themes';
 import { Carousel } from '../ui/Carousel';
 import { CloverRain } from '../ui/CloverRain';
+import { LavaLamp } from '../ui/LavaLamp';
+import { playDing, playTick, playWhoosh } from './sfx';
 import { Countdown } from '../ui/Countdown';
 import { Podium } from '../ui/Podium';
 import { Scoreboard } from '../ui/Scoreboard';
@@ -63,6 +65,31 @@ export function HostApp({ theme }: { theme: ThemeId }) {
     else music.current.stop();
   }, [playMusic]);
 
+  // Quiet synthesized bed under the game itself; the lobby and the podium have their own audio.
+  const gameMusic = useRef<LobbyMusic | null>(null);
+  const playBed = unlocked && !muted && view.phase !== 'lobby' && view.phase !== 'gameOver';
+  useEffect(() => {
+    gameMusic.current ??= new LobbyMusic(true);
+    if (playBed) gameMusic.current.start();
+    else gameMusic.current.stop();
+  }, [playBed]);
+
+  // Sound effects: a whoosh when a phase starts, a ding on reveals, ticks in the last seconds of a timer.
+  const soundOn = unlocked && !muted;
+  const soundRef = useRef(soundOn);
+  soundRef.current = soundOn;
+  const lastPhase = useRef(view.phase);
+  useEffect(() => {
+    const prev = lastPhase.current;
+    lastPhase.current = view.phase;
+    if (prev === view.phase || !soundRef.current || view.phase === 'lobby' || view.phase === 'gameOver') return;
+    if (view.phase === 'reveal' || view.phase === 'quizReveal' || view.phase === 'finalResults') playDing();
+    else playWhoosh();
+  }, [view.phase]);
+  const onTick = (left: number) => {
+    if (soundRef.current && left > 0 && left <= 5) playTick(left);
+  };
+
   // Read prompts and answers aloud.
   const m = view.matchup;
   const speechKey =
@@ -84,11 +111,11 @@ export function HostApp({ theme }: { theme: ThemeId }) {
 
   return (
     <main className="screen host">
-      {view.theme === 'lars' && <CloverRain />}
+      {view.theme === 'lars' ? <CloverRain /> : <LavaLamp />}
       <button className="mute" onClick={() => setMuted(!muted)}>
         {muted ? s.soundOff : s.soundOn}
       </button>
-      <Header view={view} />
+      <Header view={view} onTick={onTick} />
       {status !== 'ready' && (
         <p className="notice">
           {status === 'connecting' ? s.connectingBroker : s.reconnectingBroker}
@@ -108,7 +135,7 @@ export function HostApp({ theme }: { theme: ThemeId }) {
 
 const QUIZ_SHAPES = ['▲', '◆', '●', '■'];
 
-function Header({ view }: { view: View }) {
+function Header({ view, onTick }: { view: View; onTick: (secondsLeft: number) => void }) {
   const s = STRINGS[view.theme];
   const labels: Record<string, string> = {
     answering: s.round(view.round),
@@ -128,7 +155,7 @@ function Header({ view }: { view: View }) {
       <span>
         {s.room} {view.roomCode}
       </span>
-      <Countdown deadline={view.deadline} paused={view.paused} />
+      <Countdown deadline={view.deadline} paused={view.paused} onTick={onTick} />
     </header>
   );
 }
