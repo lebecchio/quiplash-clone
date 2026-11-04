@@ -7,6 +7,7 @@ import { HostApp } from './host/HostApp';
 import { clearSavedState } from './host/persist';
 import { PhoneApp } from './phone/PhoneApp';
 import './styles.css';
+import './gameshow.css';
 
 type Route =
   | { name: 'home' }
