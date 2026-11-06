@@ -487,7 +487,7 @@ describe('Danish Lars version', () => {
 
 describe('player prompts per theme', () => {
   it('are accepted in the default version but not in the Lars version', () => {
-    for (const [theme, expected] of [['default', 1], ['lars', 0]] as const) {
+    for (const [theme, expected] of [['default', 1], ['lars', 0], ['da', 1]] as const) {
       let s = createGame({ seed: 1, theme });
       s = reduce(s, { type: 'join', token: 'a', name: 'A', now: 1 });
       s = reduce(s, { type: 'submitPrompt', playerId: 'p1', text: 'hello?', now: 2 });
@@ -579,7 +579,7 @@ describe('quiz breaks', () => {
   });
 
   it('keeps the right answer pointing at the right option after shuffling', () => {
-    for (const theme of ['default', 'lars'] as const) {
+    for (const theme of ['default', 'lars', 'da'] as const) {
       const pack = quizFor(theme);
       for (const src of pack) expect(new Set(src.options).size).toBe(4);
       const t = new Table(0);

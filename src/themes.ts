@@ -12,6 +12,7 @@ export interface ThemeInfo {
 
 export const THEMES: Record<ThemeId, ThemeInfo> = {
   default: { title: 'Jim', emoji: '', photos: [] },
+  da: { title: 'Jim', emoji: '', photos: [] },
   lars: {
     title: 'Gamle Lars spillet',
     emoji: '🍀',
@@ -22,5 +23,5 @@ export const THEMES: Record<ThemeId, ThemeInfo> = {
 
 /** Colors and decorations live in styles.css under html[data-theme="..."]. */
 export function applyTheme(theme: ThemeId) {
-  document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.theme = theme === 'da' ? 'default' : theme; // Danish shares the default look
 }

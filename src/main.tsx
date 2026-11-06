@@ -2,6 +2,7 @@ import { Logo } from './ui/Logo';
 import { createRoot } from 'react-dom/client';
 import { useEffect, useState } from 'react';
 import { isThemeId, type ThemeId } from './game/avatars';
+import { STRINGS } from './i18n';
 import { applyTheme, THEMES } from './themes';
 import { HostApp } from './host/HostApp';
 import { clearSavedState } from './host/persist';
@@ -10,7 +11,7 @@ import './styles.css';
 import './gameshow.css';
 
 type Route =
-  | { name: 'home' }
+  | { name: 'home'; theme: ThemeId }
   | { name: 'host'; theme: ThemeId | null }
   | { name: 'join'; code: string; theme: ThemeId };
 
@@ -24,7 +25,7 @@ function parseHash(hash: string): Route {
     const code = (params.get('code') ?? '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
     return { name: 'join', code, theme };
   }
-  return { name: 'home' };
+  return { name: 'home', theme };
 }
 
 function App() {
@@ -37,10 +38,11 @@ function App() {
 
   if (route.name === 'host') return route.theme ? <HostApp theme={route.theme} /> : <ThemePicker />;
   if (route.name === 'join' && route.code.length === 4) return <PhoneApp code={route.code} theme={route.theme} />;
-  return <Home bad={route.name === 'join'} />;
+  return <Home bad={route.name === 'join'} theme={route.theme} />;
 }
 
-function Home({ bad }: { bad: boolean }) {
+function Home({ bad, theme }: { bad: boolean; theme: ThemeId }) {
+  const s = STRINGS[theme];
   const [code, setCode] = useState('');
   useEffect(() => applyTheme('default'), []);
   return (
@@ -49,20 +51,20 @@ function Home({ bad }: { bad: boolean }) {
         <Logo />
         <span className="sr-only">Jim</span>
       </h1>
-      <a className="big primary link" href="#/host">
-        Host a game on this screen
+      <a className="big primary link" href={theme === 'default' ? '#/host' : `#/host?theme=${theme}`}>
+        {s.homeHost}
       </a>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          location.hash = `#/join?code=${code}`;
+          location.hash = `#/join?code=${code}${theme === 'default' ? '' : `&theme=${theme}`}`;
         }}
       >
-        <label htmlFor="code">Join with a room code</label>
-        {bad && <p className="notice">Enter the 4-letter room code.</p>}
+        <label htmlFor="code">{s.homeJoinLabel}</label>
+        {bad && <p className="notice">{s.homeBadCode}</p>}
         <input id="code" value={code} maxLength={4} autoCapitalize="characters" onChange={(e) => setCode(e.target.value.toUpperCase())} />
         <button className="big" disabled={code.length !== 4}>
-          Join
+          {s.homeJoin}
         </button>
       </form>
     </main>
@@ -83,6 +85,9 @@ function ThemePicker() {
       </a>
       <a className="big link lars-link" href="#/host?theme=lars">
         {THEMES.lars.emoji} Lars version
+      </a>
+      <a className="big link" href="#/host?theme=da">
+        🇩🇰 Dansk version
       </a>
       <p className="muted">
         <a href="#/">← Back</a>

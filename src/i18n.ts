@@ -33,6 +33,11 @@ export interface Strings {
   needMore: (min: number, name: string) => string;
   waitingFirst: string;
   promptCount: (n: number) => string;
+  // front page
+  homeHost: string;
+  homeJoinLabel: string;
+  homeBadCode: string;
+  homeJoin: string;
   // phone
   rejected: { started: string; full: string; unknown: string };
   cantConnect: string;
@@ -88,6 +93,10 @@ export interface Strings {
 
 const en: Strings = {
   lang: 'en-US',
+  homeHost: 'Host a game on this screen',
+  homeJoinLabel: 'Join with a room code',
+  homeBadCode: 'Enter the 4-letter room code.',
+  homeJoin: 'Join',
   soundOn: '🔊 Sound on',
   soundOff: '🔇 Muted',
   connectingBroker: 'Connecting to the PeerJS broker…',
@@ -179,6 +188,10 @@ const en: Strings = {
 
 const da: Strings = {
   lang: 'da-DK',
+  homeHost: 'Vær vært for et spil på denne skærm',
+  homeJoinLabel: 'Deltag med en rumkode',
+  homeBadCode: 'Skriv rumkoden på 4 bogstaver.',
+  homeJoin: 'Deltag',
   soundOn: '🔊 Lyd til',
   soundOff: '🔇 Lyd fra',
   connectingBroker: 'Forbinder til PeerJS-serveren…',
@@ -268,4 +281,4 @@ const da: Strings = {
   quizNobody: 'Ingen havde det rigtigt.',
 };
 
-export const STRINGS: Record<ThemeId, Strings> = { default: en, lars: da };
+export const STRINGS: Record<ThemeId, Strings> = { default: en, lars: da, da };
